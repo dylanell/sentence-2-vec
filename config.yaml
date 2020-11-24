@@ -1,0 +1,10 @@
+dataset_directory: '/home/dylan/datasets/answers/diabetes/'
+output_directory: '/tmp/'
+model_type: 'triplet'
+model_file: null
+model_name: 'sentence2vec'
+number_epochs: 20
+batch_size: 64
+learning_rate: 0.001
+weight_decay: 0.01
+number_workers: 1
