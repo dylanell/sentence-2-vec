@@ -52,4 +52,4 @@ def build_processed_qa_dataloaders(data_file, split=0.7, batch_size=32):
         shuffle=False
     )
 
-    return train_iter, val_iter
+    return train_iter, val_iter, texts_field.vocab

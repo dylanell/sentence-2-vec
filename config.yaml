@@ -3,8 +3,12 @@ output_directory: '/tmp/'
 model_type: 'triplet'
 model_file: null
 model_name: 'sentence2vec'
-number_epochs: 20
+number_epochs: 100
 batch_size: 64
 learning_rate: 0.001
 weight_decay: 0.01
 number_workers: 1
+embed_dimensionality: 512
+conv_output_channels: 512
+output_dimensionality: 512
+output_activation: tanh
