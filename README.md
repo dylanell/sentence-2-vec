@@ -32,9 +32,9 @@ The dataset processing in this project assumes the text data in each row of
  , row one of the example `csv` file above would yield a tokenized question
   example as `['question', 'one', '?']`. It is important to note that if the
    question of row one was `question one?`, the tokenization in this project
-    would yield `['question', 'one?']`, therefore punctuation must be pre
-    -processed as separate words and separated by a 'space' character prior to
-     generating the `csv` datafile for this project.
+    would yield `['question', 'one?']`, therefore punctuation must be 
+     pre-processed as separate words and separated by a 'space' character
+      prior to generating the `csv` datafile for this project.
      
  ### Training:
  
