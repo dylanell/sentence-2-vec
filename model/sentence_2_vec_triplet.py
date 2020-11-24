@@ -154,7 +154,6 @@ class Sentence2VecTriplet(torch.nn.Module):
 
             # report epoch metrics
             avg_epoch_loss = epoch_loss / i
-            print('[INFO]: epoch: {}, loss: {}'.format(e + 1, avg_epoch_loss))
 
             # add metrics to tensorboard
             writer.add_scalar('Loss/Train', avg_epoch_loss, e+1)

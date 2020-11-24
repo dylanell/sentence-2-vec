@@ -28,7 +28,7 @@ def main():
         print('[ERROR]: unknown model type \'{}\''.format(
             config['model_type']))
         exit()
-        
+
     # train model
     model.train_epochs(train_iter)
 
