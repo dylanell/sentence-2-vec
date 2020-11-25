@@ -35,8 +35,8 @@ def main():
     model.train_epochs(train_iter)
 
     # save learned sentence vectors for training and validation splits
-    model.generate_sentence_embeddings(train_iter, 'train_vecs')
-    model.generate_sentence_embeddings(val_iter, 'val_vecs')
+    model.generate_sentence_embeddings(train_iter, 'train')
+    model.generate_sentence_embeddings(val_iter, 'val')
 
 
 if __name__ == '__main__':
