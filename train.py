@@ -16,7 +16,9 @@ def main():
     # path to processed qa data file
     data_file = '{}qa_pairs_processed.csv'.format(config['dataset_directory'])
 
-    train_iter, val_iter, vocab = build_processed_qa_dataloaders(data_file)
+    # build data iterators and vocabulary object
+    train_iter, val_iter, vocab = build_processed_qa_dataloaders(
+        data_file, batch_size=config['batch_size'])
 
     # add to config data
     config['vocab'] = vocab
@@ -31,6 +33,10 @@ def main():
 
     # train model
     model.train_epochs(train_iter)
+
+    # save learned sentence vectors for training and validation splits
+    model.generate_sentence_embeddings(train_iter, 'train_vecs')
+    model.generate_sentence_embeddings(val_iter, 'val_vecs')
 
 
 if __name__ == '__main__':

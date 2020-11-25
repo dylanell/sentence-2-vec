@@ -37,6 +37,7 @@ def build_processed_qa_dataloaders(data_file, split=0.7, batch_size=32):
     # NOTE: this is REQUIRED before creating an iterator since an iterator uses
     # the vocab object to create vectors of word indices
     texts_field.build_vocab(train_ds)
+    vocab = texts_field.vocab
 
     # construct training dataset iterator
     train_iter = torchtext.data.Iterator(
@@ -52,4 +53,4 @@ def build_processed_qa_dataloaders(data_file, split=0.7, batch_size=32):
         shuffle=False
     )
 
-    return train_iter, val_iter, texts_field.vocab
+    return train_iter, val_iter, vocab

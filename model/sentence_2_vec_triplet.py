@@ -2,6 +2,14 @@
 Sentence2Vec model implemented as a torch.nn.Module.
 """
 
+# TODO: build_vocab is nondeterministic, therefore when trying to load a
+#  pretrained model there can be a vocab size mismatch or indices will be
+#  different than during training. FIX: Figure out if vocab can be generated
+#  deterministically or provide manually constructed vocab to Field object.
+#  QUICK FIX: For now, save trained word embeddings and sentence embeddings
+#  for training and validation sets to use offline.
+
+import pandas as pd
 import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -51,6 +59,13 @@ class Sentence2VecTriplet(torch.nn.Module):
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
         print('[INFO]: using {} device'.format(self.device))
+
+        # if model file provided, load pretrained params
+        if config['model_file']:
+            self.model.load_state_dict(
+                torch.load(config['model_file'], map_location=self.device))
+
+        # send model to found device
         self.to(self.device)
 
         self.config = config
@@ -156,9 +171,57 @@ class Sentence2VecTriplet(torch.nn.Module):
             avg_epoch_loss = epoch_loss / i
 
             # add metrics to tensorboard
-            writer.add_scalar('Loss/Train', avg_epoch_loss, e+1)
+            writer.add_scalar('Loss/Train', avg_epoch_loss, e + 1)
 
             # print epoch metrics
             template = '[INFO]: Epoch {}, Epoch Time {:.2f}s, ' \
                        'Train Loss: {:.2f}'
-            print(template.format(e+1, epoch_time, avg_epoch_loss))
+            print(template.format(e + 1, epoch_time, avg_epoch_loss))
+
+    def generate_sentence_embeddings(self, data_iter, filename):
+        # create dataframe to fill with data
+        df = pd.DataFrame(columns=[
+            'question_tok', 'answer_tok', 'question_idx', 'answer_idx',
+            'question_vec', 'answer_vec'])
+
+        print('[INFO]: writing \'{}\' sentence embeddings...'
+              .format(filename))
+
+        for i, data in enumerate(data_iter):
+            # parse batch
+            question_idx = data.question.to(self.device)
+            answer_idx = data.answer.to(self.device)
+
+            # feed question and answer through model
+            question_vec = self.forward(question_idx)
+            answer_vec = self.forward(answer_idx)
+
+            # convert question indices to list of word tokens
+            question_tok = [
+                ' '.join([self.config['vocab'].itos[idx] for idx in s
+                          if idx != 1]) for s in question_idx.T.tolist()]
+
+            # convert answer indices to list of word tokens
+            answer_tok = [
+                ' '.join([self.config['vocab'].itos[idx] for idx in s
+                          if idx != 1]) for s in answer_idx.T.tolist()]
+
+            # remove all 1's from idx vectors
+            question_idx_list = [[idx for idx in idx_list if idx != 1] for
+                                 idx_list in question_idx.T.tolist()]
+            answer_idx_list = [[idx for idx in idx_list if idx != 1] for
+                               idx_list in answer_idx.T.tolist()]
+
+            df = df.append({
+                'question_tok': question_tok,
+                'answer_tok': answer_tok,
+                'question_idx': question_idx_list,
+                'answer_idx': answer_idx_list,
+                'question_vec': question_vec.tolist(),
+                'answer_vec': answer_vec.tolist()
+            }, ignore_index=True)
+
+        # pickle dataframe to preserve column data formats
+        df.to_pickle(
+            '{}{}_{}.pickle'.format(self.config['output_directory'],
+                                    self.config['model_name'], filename))
