@@ -212,14 +212,16 @@ class Sentence2VecTriplet(torch.nn.Module):
             answer_idx_list = [[idx for idx in idx_list if idx != 1] for
                                idx_list in answer_idx.T.tolist()]
 
-            df = df.append({
-                'question_tok': question_tok,
-                'answer_tok': answer_tok,
-                'question_idx': question_idx_list,
-                'answer_idx': answer_idx_list,
-                'question_vec': question_vec.tolist(),
-                'answer_vec': answer_vec.tolist()
-            }, ignore_index=True)
+            # append this batch of data to the dataframe
+            df = df.append(
+                pd.DataFrame(list(zip(question_tok, answer_tok,
+                                      question_idx_list, answer_idx_list,
+                                      question_vec, answer_vec)),
+                             columns=['question_tok', 'answer_tok',
+                                      'question_idx', 'answer_idx',
+                                      'question_vec', 'answer_vec']),
+                ignore_index=True
+            )
 
         # pickle dataframe to preserve column data formats
         df.to_pickle(
