@@ -9,7 +9,9 @@ Sentence2Vec model implemented as a torch.nn.Module.
 #  QUICK FIX: For now, save trained word embeddings and sentence embeddings
 #  for training and validation sets to use offline.
 
-import pandas as pd
+# TODO: Writing sentence vectors and other data to a dataframe is too memory
+#  intensive. Instead, append data to csv/text files on disk.
+
 import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -179,15 +181,29 @@ class Sentence2VecTriplet(torch.nn.Module):
             print(template.format(e + 1, epoch_time, avg_epoch_loss))
 
     def generate_sentence_embeddings(self, data_iter, filename):
-        # create dataframe to fill with data
-        df = pd.DataFrame(columns=[
-            'question_tok', 'answer_tok', 'question_idx', 'answer_idx',
-            'question_vec', 'answer_vec'])
+        # open file objects in append mode
+        question_tok_fp = open(
+            '{}{}_{}_question_tok.txt'.format(
+                self.config['output_directory'],
+                self.config['model_name'], filename), 'w+')
+        answer_tok_fp = open(
+            '{}{}_{}_answer_tok.txt'.format(
+                self.config['output_directory'],
+                self.config['model_name'], filename), 'w+')
+        question_vec_fp = open(
+            '{}{}_{}_question_vec.txt'.format(
+                self.config['output_directory'],
+                self.config['model_name'], filename), 'w+')
+        answer_vec_fp = open(
+            '{}{}_{}_answer_vec.txt'.format(
+                self.config['output_directory'],
+                self.config['model_name'], filename), 'w+')
 
         print('[INFO]: writing \'{}\' sentence embeddings...'
               .format(filename))
 
         for i, data in enumerate(data_iter):
+            print(i)
             # parse batch
             question_idx = data.question.to(self.device)
             answer_idx = data.answer.to(self.device)
@@ -206,24 +222,26 @@ class Sentence2VecTriplet(torch.nn.Module):
                 ' '.join([self.config['vocab'].itos[idx] for idx in s
                           if idx != 1]) for s in answer_idx.T.tolist()]
 
-            # remove all 1's from idx vectors
-            question_idx_list = [[idx for idx in idx_list if idx != 1] for
-                                 idx_list in question_idx.T.tolist()]
-            answer_idx_list = [[idx for idx in idx_list if idx != 1] for
-                               idx_list in answer_idx.T.tolist()]
+            # write question token data for this batch
+            for tok in question_tok:
+                question_tok_fp.write('{}\n'.format(tok))
 
-            # append this batch of data to the dataframe
-            df = df.append(
-                pd.DataFrame(list(zip(question_tok, answer_tok,
-                                      question_idx_list, answer_idx_list,
-                                      question_vec, answer_vec)),
-                             columns=['question_tok', 'answer_tok',
-                                      'question_idx', 'answer_idx',
-                                      'question_vec', 'answer_vec']),
-                ignore_index=True
-            )
+            # write answer token data for this batch
+            for tok in answer_tok:
+                answer_tok_fp.write('{}\n'.format(tok))
 
-        # pickle dataframe to preserve column data formats
-        df.to_pickle(
-            '{}{}_{}.pickle'.format(self.config['output_directory'],
-                                    self.config['model_name'], filename))
+            # write question vec data
+            for vec in question_vec:
+                line = ','.join([str(n) for n in vec.tolist()])
+                question_vec_fp.write('{}\n'.format(line))
+
+            # write answer vec data
+            for vec in answer_vec:
+                line = ','.join([str(n) for n in vec.tolist()])
+                answer_vec_fp.write('{}\n'.format(line))
+
+        # close file objects
+        question_tok_fp.close()
+        answer_tok_fp.close()
+        question_vec_fp.close()
+        answer_vec_fp.close()
