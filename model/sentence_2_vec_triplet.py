@@ -203,7 +203,6 @@ class Sentence2VecTriplet(torch.nn.Module):
               .format(filename))
 
         for i, data in enumerate(data_iter):
-            print(i)
             # parse batch
             question_idx = data.question.to(self.device)
             answer_idx = data.answer.to(self.device)
