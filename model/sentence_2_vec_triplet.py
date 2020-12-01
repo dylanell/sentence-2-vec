@@ -29,7 +29,10 @@ class Sentence2VecTriplet(torch.nn.Module):
     def __init__(self, config):
         super(Sentence2VecTriplet, self).__init__()
         # activation functions
-        self.out_act = activation[config['output_activation']]
+        if config['output_activation'] is not None:
+            self.out_act = activation[config['output_activation']]
+        else:
+            self.out_act = torch.nn.Identity()
 
         # convert index sentences to word embedding matrices
         self.embedding_layer = torch.nn.Embedding(
@@ -96,19 +99,14 @@ class Sentence2VecTriplet(torch.nn.Module):
         z4 = torch.cat([z4_3_pool, z4_4_pool, z4_5_pool], dim=1)
 
         # transform to output dimensionality
-        z5 = self.linear_layer(z4)
-
-        # add final activation
-        if self.out_act is not None:
-            y = self.out_act(z5)
-        else:
-            y = z5
+        y = self.out_act(self.linear_layer(z4))
 
         return y
 
     def train_epochs(self, train_iter):
         # define loss function
-        loss_fn = torch.nn.TripletMarginLoss()
+        loss_fn = torch.nn.TripletMarginLoss(
+            margin=self.config['margin'], p=2)
 
         # initialize optimizer
         optimizer = torch.optim.Adam(
@@ -118,6 +116,10 @@ class Sentence2VecTriplet(torch.nn.Module):
         # initialize tensorboard writer
         writer = SummaryWriter('{}runs/{}/'.format(
             self.config['output_directory'], self.config['model_name']))
+
+        # push output to [0, 1]
+        triplet_labels = torch.tensor([[0, 1]],
+            requires_grad=False).repeat(self.config['batch_size'], 1)
 
         print('[INFO]: training...')
 
@@ -152,8 +154,19 @@ class Sentence2VecTriplet(torch.nn.Module):
                 neg_batch = enc_answer_batch[
                     torch.randperm(batch_size, dtype=torch.long)]
 
-                # compute triplet loss
-                loss = loss_fn(anchor_batch, pos_batch, neg_batch)
+                # triplet loss using margin from Pytorch
+                #loss = loss_fn(anchor_batch, pos_batch, neg_batch)
+
+                # triplet loss from original paper
+                d_pos = torch.sqrt(torch.sum(
+                    torch.pow(anchor_batch - pos_batch, 2), dim=1))
+                d_neg = torch.sqrt(torch.sum(
+                    torch.pow(anchor_batch - neg_batch, 2), dim=1))
+                d_pos_neg = torch.cat(
+                    [d_pos.unsqueeze(1), d_neg.unsqueeze(1)], dim=1)
+                out = torch.nn.functional.softmax(d_pos_neg, dim=1)
+                loss = torch.mean(torch.sqrt(torch.sum(
+                    torch.pow(out - triplet_labels[:d_pos.shape[0]], 2))))
 
                 epoch_loss += loss.item()
 
