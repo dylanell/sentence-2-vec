@@ -32,18 +32,18 @@ The dataset processing in this project assumes the text data in each row of
  , row one of the example `csv` file above would yield a tokenized question
   example as `['question', 'one', '?']`. It is important to note that if the
    question of row one was `question one?`, the tokenization in this project
-    would yield `['question', 'one?']`, therefore punctuation must be 
+    would yield `['question', 'one?']`, therefore punctuation must be
      pre-processed as separate words and separated by a 'space' character
       prior to generating the `csv` datafile for this project.
-     
+
  ### Training:
- 
+
  Training options and hyperparameters are pulled from the `config.yaml` file
   and can be changed by editing the file contents. The `train.py` script
    accepts only several specific values for the `model_type` variable in
-    `config.yaml` corresponding to the type of NLP model you would like to 
+    `config.yaml` corresponding to the type of NLP model you would like to
      train. Train a model by running the command:
-     
+
 ```
 $ python train.py
 ```
@@ -54,7 +54,7 @@ This project is accompanied by a Jupyter notebook that explores the learned
  sentence representations by performing data visualizations and cluster
   analysis. Run the following command to start the Jupyter notebook server in
    your browser:
-   
+
 ```
 $ jupyter-notebook notebook.ipynb
 ```
@@ -70,3 +70,6 @@ $ jupyter-notebook notebook.ipynb
 7. http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
 8. https://arxiv.org/pdf/2010.05113.pdf
 9. https://gombru.github.io/2019/04/03/ranking_loss/
+10. [On the Surprising Behavior of Distance Metrics in High Dimensional Space](https://bib.dbvis.de/uploadedFiles/155.pdf)
+11. [When is Nearest Neighbor Meaningful?](https://members.loria.fr/MOBerger/Enseignement/Master2/Exposes/beyer.pdf)
+12. [FaceNet: A Unified Embedding for Face Recognition and Clustering](https://arxiv.org/pdf/1503.03832.pdf)
