@@ -6,7 +6,7 @@ import yaml
 
 from util.pytorch_utils import build_processed_qa_dataloaders
 from model.sentence_2_vec_triplet_margin import Sentence2VecTripletMargin
-from model.sentence_2_vec_triplet_custom import Sentence2VecTripletCustom
+from model.sentence_2_vec_triplet_metric import Sentence2VecTripletMetric
 
 
 def main():
@@ -27,8 +27,8 @@ def main():
     # initialize model
     if config['model_type'] == 'triplet_margin':
         model = Sentence2VecTripletMargin(config)
-    elif config['model_type'] == 'triplet_custom':
-        model = Sentence2VecTripletCustom(config)
+    elif config['model_type'] == 'triplet_metric':
+        model = Sentence2VecTripletMetric(config)
     else:
         print('[ERROR]: unknown model type \'{}\''.format(
             config['model_type']))

@@ -1,8 +1,8 @@
 dataset_directory: '/home/dylan/datasets/answers/diabetes/'
 output_directory: '/tmp/'
-model_type: 'triplet_custom'
+model_type: 'triplet_metric'
 model_file: null
-model_name: 'test1'
+model_name: 'metric'
 number_epochs: 5
 batch_size: 64
 learning_rate: 0.0001
