@@ -5,7 +5,8 @@ Script to train sentence2vec model.
 import yaml
 
 from util.pytorch_utils import build_processed_qa_dataloaders
-from model.sentence_2_vec_triplet import Sentence2VecTriplet
+from model.sentence_2_vec_triplet_margin import Sentence2VecTripletMargin
+from model.sentence_2_vec_triplet_custom import Sentence2VecTripletCustom
 
 
 def main():
@@ -24,8 +25,10 @@ def main():
     config['vocab'] = vocab
 
     # initialize model
-    if config['model_type'] == 'triplet':
-        model = Sentence2VecTriplet(config)
+    if config['model_type'] == 'triplet_margin':
+        model = Sentence2VecTripletMargin(config)
+    elif config['model_type'] == 'triplet_custom':
+        model = Sentence2VecTripletCustom(config)
     else:
         print('[ERROR]: unknown model type \'{}\''.format(
             config['model_type']))

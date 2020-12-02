@@ -1,5 +1,5 @@
 """
-Sentence2Vec model implemented as a torch.nn.Module.
+Sentence2Vec model using custom loss implemented as a torch.nn.Module.
 """
 
 # TODO: build_vocab is nondeterministic, therefore when trying to load a
@@ -25,9 +25,9 @@ activation = {
 }
 
 
-class Sentence2VecTriplet(torch.nn.Module):
+class Sentence2VecTripletCustom(torch.nn.Module):
     def __init__(self, config):
-        super(Sentence2VecTriplet, self).__init__()
+        super(Sentence2VecTripletCustom, self).__init__()
         # activation functions
         if config['output_activation'] is not None:
             self.out_act = activation[config['output_activation']]
@@ -58,8 +58,11 @@ class Sentence2VecTriplet(torch.nn.Module):
             kernel_size=(5, config['embed_dimensionality']))
 
         # linear layer to control output representation dimensionality
-        self.linear_layer = torch.nn.Linear(3 * config['conv_output_channels'],
+        self.linear_layer = torch.nn.Linear(3*config['conv_output_channels'],
                                             config['output_dimensionality'])
+
+        # comparator takes two concatenated outputs and outputs decision
+        self.comparator = torch.nn.Linear(2*config['output_dimensionality'], 1)
 
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -99,17 +102,13 @@ class Sentence2VecTriplet(torch.nn.Module):
         z4 = torch.cat([z4_3_pool, z4_4_pool, z4_5_pool], dim=1)
 
         # transform to output dimensionality
-        z5 = self.out_act(self.linear_layer(z4))
-
-        # normalize outputs
-        y = torch.nn.functional.normalize(z5, dim=1)
+        y = self.out_act(self.linear_layer(z4))
 
         return y
 
     def train_epochs(self, train_iter):
-        # define loss function
-        loss_fn = torch.nn.TripletMarginLoss(
-            margin=self.config['margin'], p=self.config['p_norm'])
+        # binary cross entropy loss
+        loss_fn = torch.nn.BCELoss()
 
         # initialize optimizer
         optimizer = torch.optim.Adam(
@@ -120,8 +119,10 @@ class Sentence2VecTriplet(torch.nn.Module):
         writer = SummaryWriter('{}runs/{}/'.format(
             self.config['output_directory'], self.config['model_name']))
 
-        # push output to [0, 1]
-        triplet_labels = torch.tensor([[0, 1]], requires_grad=False).repeat(
+        # push output to [1] or [0] (prob neighbor, prob not-neighbor)
+        pos_labels = torch.tensor([[1.]], requires_grad=False).repeat(
+            self.config['batch_size'], 1).to(self.device)
+        neg_labels = torch.tensor([[0.]], requires_grad=False).repeat(
             self.config['batch_size'], 1).to(self.device)
 
         print('[INFO]: training...')
@@ -157,19 +158,18 @@ class Sentence2VecTriplet(torch.nn.Module):
                 neg_batch = enc_answer_batch[
                     torch.randperm(batch_size, dtype=torch.long)]
 
-                # triplet loss using margin from Pytorch
-                loss = loss_fn(anchor_batch, pos_batch, neg_batch)
+                # comparator output on neighbor samples
+                pos_out = torch.nn.functional.sigmoid(self.comparator(
+                    torch.cat([anchor_batch, pos_batch], dim=1)))
 
-                # triplet loss from original paper (with variable p-norm)
-                #d_pos = torch.nn.functional.pairwise_distance(
-                #    anchor_batch, pos_batch, p=self.config['p_norm'])
-                #d_neg = torch.nn.functional.pairwise_distance(
-                #    anchor_batch, neg_batch, p=self.config['p_norm'])
-                #d_pos_neg = torch.cat(
-                #    [d_pos.unsqueeze(1), d_neg.unsqueeze(1)], dim=1)
-                #out = torch.nn.functional.softmax(d_pos_neg, dim=1)
-                #loss = torch.mean(torch.sqrt(torch.sum(
-                #    torch.pow(out - triplet_labels[:d_pos.shape[0]], 2))))
+                # comparator output on non-neighbor samples
+                neg_out = torch.nn.functional.sigmoid(self.comparator(
+                    torch.cat([anchor_batch, neg_batch], dim=1)))
+
+                # construct loss
+                pos_loss = loss_fn(pos_out, pos_labels)
+                neg_loss = loss_fn(neg_out, neg_labels)
+                loss = (pos_loss + neg_loss) / 2
 
                 epoch_loss += loss.item()
 
