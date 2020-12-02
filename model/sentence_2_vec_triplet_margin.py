@@ -119,7 +119,7 @@ class Sentence2VecTripletMargin(torch.nn.Module):
 
         # initialize tensorboard writer
         writer = SummaryWriter('{}runs/{}/'.format(
-            self.config['output_directory'], self.config['model_name']))
+            self.config['output_directory'], self.config['model_type']))
 
         print('[INFO]: training...')
 
@@ -169,7 +169,7 @@ class Sentence2VecTripletMargin(torch.nn.Module):
 
             # save model
             torch.save(self.state_dict(), '{}{}.pt'.format(
-                self.config['output_directory'], self.config['model_name']))
+                self.config['output_directory'], self.config['model_type']))
 
             # report epoch metrics
             avg_epoch_loss = epoch_loss / i
@@ -187,19 +187,19 @@ class Sentence2VecTripletMargin(torch.nn.Module):
         question_tok_fp = open(
             '{}{}_{}_question_tok.txt'.format(
                 self.config['output_directory'],
-                self.config['model_name'], filename), 'w+')
+                self.config['model_type'], filename), 'w+')
         answer_tok_fp = open(
             '{}{}_{}_answer_tok.txt'.format(
                 self.config['output_directory'],
-                self.config['model_name'], filename), 'w+')
+                self.config['model_type'], filename), 'w+')
         question_vec_fp = open(
             '{}{}_{}_question_vec.txt'.format(
                 self.config['output_directory'],
-                self.config['model_name'], filename), 'w+')
+                self.config['model_type'], filename), 'w+')
         answer_vec_fp = open(
             '{}{}_{}_answer_vec.txt'.format(
                 self.config['output_directory'],
-                self.config['model_name'], filename), 'w+')
+                self.config['model_type'], filename), 'w+')
 
         print('[INFO]: writing \'{}\' sentence embeddings...'
               .format(filename))

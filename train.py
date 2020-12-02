@@ -25,9 +25,9 @@ def main():
     config['vocab'] = vocab
 
     # initialize model
-    if config['model_type'] == 'triplet_margin':
+    if config['model_type'] == 'margin':
         model = Sentence2VecTripletMargin(config)
-    elif config['model_type'] == 'triplet_metric':
+    elif config['model_type'] == 'metric':
         model = Sentence2VecTripletMetric(config)
     else:
         print('[ERROR]: unknown model type \'{}\''.format(
