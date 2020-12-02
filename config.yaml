@@ -2,7 +2,7 @@ dataset_directory: '/home/dylan/datasets/answers/diabetes/'
 output_directory: '/tmp/'
 model_type: 'triplet'
 model_file: null
-model_name: 'triplet'
+model_name: 'margin'
 number_epochs: 5
 batch_size: 64
 learning_rate: 0.0001
@@ -10,7 +10,7 @@ weight_decay: 0.01
 number_workers: 1
 embed_dimensionality: 512
 conv_output_channels: 512
-output_dimensionality: 512
+output_dimensionality: 128
 output_activation: tanh
 margin: 5
-p_norm: 0.666
+p_norm: 2.0
