@@ -2,7 +2,7 @@ dataset_directory: '/home/dylan/datasets/answers/diabetes/'
 output_directory: '/tmp/'
 model_type: 'triplet'
 model_file: null
-model_name: 'sentence2vec'
+model_name: 'triplet'
 number_epochs: 5
 batch_size: 64
 learning_rate: 0.0001
@@ -13,3 +13,4 @@ conv_output_channels: 512
 output_dimensionality: 512
 output_activation: tanh
 margin: 5
+p_norm: 0.666
