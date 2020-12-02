@@ -167,8 +167,8 @@ class Sentence2VecTripletCustom(torch.nn.Module):
                     torch.cat([anchor_batch, neg_batch], dim=1)))
 
                 # construct loss
-                pos_loss = loss_fn(pos_out, pos_labels)
-                neg_loss = loss_fn(neg_out, neg_labels)
+                pos_loss = loss_fn(pos_out, pos_labels[:pos_out.shape[0]])
+                neg_loss = loss_fn(neg_out, neg_labels[:neg_out.shape[0]])
                 loss = (pos_loss + neg_loss) / 2
 
                 epoch_loss += loss.item()
