@@ -99,7 +99,10 @@ class Sentence2VecTriplet(torch.nn.Module):
         z4 = torch.cat([z4_3_pool, z4_4_pool, z4_5_pool], dim=1)
 
         # transform to output dimensionality
-        y = self.out_act(self.linear_layer(z4))
+        z5 = self.out_act(self.linear_layer(z4))
+
+        # normalize outputs
+        y = torch.nn.functional.normalize(z5, dim=1)
 
         return y
 
