@@ -73,3 +73,4 @@ $ jupyter-notebook notebook.ipynb
 10. [On the Surprising Behavior of Distance Metrics in High Dimensional Space](https://bib.dbvis.de/uploadedFiles/155.pdf)
 11. [When is Nearest Neighbor Meaningful?](https://members.loria.fr/MOBerger/Enseignement/Master2/Exposes/beyer.pdf)
 12. [FaceNet: A Unified Embedding for Face Recognition and Clustering](https://arxiv.org/pdf/1503.03832.pdf)
+13. [Deep Metric Learning Using Triplet Network](https://arxiv.org/pdf/1412.6622.pdf)
