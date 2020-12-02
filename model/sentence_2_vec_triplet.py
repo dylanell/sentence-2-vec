@@ -118,8 +118,8 @@ class Sentence2VecTriplet(torch.nn.Module):
             self.config['output_directory'], self.config['model_name']))
 
         # push output to [0, 1]
-        triplet_labels = torch.tensor([[0, 1]],
-            requires_grad=False).repeat(self.config['batch_size'], 1)
+        triplet_labels = torch.tensor([[0, 1]], requires_grad=False).repeat(
+            self.config['batch_size'], 1).to(self.device)
 
         print('[INFO]: training...')
 
