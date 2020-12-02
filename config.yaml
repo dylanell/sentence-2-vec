@@ -14,3 +14,4 @@ output_dimensionality: 128
 output_activation: relu
 margin: 0.2
 p_norm: 2.0
+normalize: True

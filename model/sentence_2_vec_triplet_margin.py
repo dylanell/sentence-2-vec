@@ -102,9 +102,10 @@ class Sentence2VecTripletMargin(torch.nn.Module):
         z5 = self.out_act(self.linear_layer(z4))
 
         # normalize outputs
-        y = torch.nn.functional.normalize(z5, dim=1)
+        if self.config['normalize']:
+            z5 = torch.nn.functional.normalize(z5, dim=1)
 
-        return y
+        return z5
 
     def train_epochs(self, train_iter):
         # define loss function
