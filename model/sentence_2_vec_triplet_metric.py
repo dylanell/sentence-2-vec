@@ -166,6 +166,7 @@ class Sentence2VecTripletMetric(torch.nn.Module):
                     [d_pos.unsqueeze(1), d_neg.unsqueeze(1)], dim=1)
                 out = torch.nn.functional.softmax(d_pos_neg, dim=1)
 
+                # MSE loss between output and labels
                 loss = loss_fn(out, triplet_labels[:batch_size])
 
                 epoch_loss += loss.item()
