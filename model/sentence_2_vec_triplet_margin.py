@@ -185,21 +185,17 @@ class Sentence2VecTripletMargin(torch.nn.Module):
     def generate_sentence_embeddings(self, data_iter, filename):
         # open file objects in append mode
         question_tok_fp = open(
-            '{}{}_{}_question_tok.txt'.format(
-                self.config['output_directory'],
-                self.config['model_type'], filename), 'w+')
+            '{}{}_question_tok.txt'.format(
+                self.config['output_directory'], filename), 'w+')
         answer_tok_fp = open(
-            '{}{}_{}_answer_tok.txt'.format(
-                self.config['output_directory'],
-                self.config['model_type'], filename), 'w+')
+            '{}{}_answer_tok.txt'.format(
+                self.config['output_directory'], filename), 'w+')
         question_vec_fp = open(
-            '{}{}_{}_question_vec.txt'.format(
-                self.config['output_directory'],
-                self.config['model_type'], filename), 'w+')
+            '{}{}_question_vec.txt'.format(
+                self.config['output_directory'], filename), 'w+')
         answer_vec_fp = open(
-            '{}{}_{}_answer_vec.txt'.format(
-                self.config['output_directory'],
-                self.config['model_type'], filename), 'w+')
+            '{}{}_answer_vec.txt'.format(
+                self.config['output_directory'], filename), 'w+')
 
         print('[INFO]: writing \'{}\' sentence embeddings...'
               .format(filename))
