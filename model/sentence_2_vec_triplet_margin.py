@@ -121,10 +121,6 @@ class Sentence2VecTripletMargin(torch.nn.Module):
         writer = SummaryWriter('{}runs/{}/'.format(
             self.config['output_directory'], self.config['model_name']))
 
-        # push output to [0, 1]
-        triplet_labels = torch.tensor([[0, 1]], requires_grad=False).repeat(
-            self.config['batch_size'], 1).to(self.device)
-
         print('[INFO]: training...')
 
         for e in range(self.config['number_epochs']):
@@ -157,17 +153,6 @@ class Sentence2VecTripletMargin(torch.nn.Module):
                 # and neg samples are identical
                 neg_batch = enc_answer_batch[
                     torch.randperm(batch_size, dtype=torch.long)]
-
-                # # triplet loss from original paper (with variable p-norm)
-                # d_pos = torch.nn.functional.pairwise_distance(
-                #     anchor_batch, pos_batch, p=self.config['p_norm'])
-                # d_neg = torch.nn.functional.pairwise_distance(
-                #     anchor_batch, neg_batch, p=self.config['p_norm'])
-                # d_pos_neg = torch.cat(
-                #     [d_pos.unsqueeze(1), d_neg.unsqueeze(1)], dim=1)
-                # out = torch.nn.functional.softmax(d_pos_neg, dim=1)
-                # loss = torch.mean(torch.sqrt(torch.sum(
-                #     torch.pow(out - triplet_labels[:d_pos.shape[0]], 2))))
 
                 # triplet loss using margin from Pytorch
                 loss = loss_fn(anchor_batch, pos_batch, neg_batch)
