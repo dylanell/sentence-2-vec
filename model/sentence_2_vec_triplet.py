@@ -25,9 +25,9 @@ activation = {
 }
 
 
-class Sentence2VecTripletMargin(torch.nn.Module):
+class Sentence2VecTriplet(torch.nn.Module):
     def __init__(self, config):
-        super(Sentence2VecTripletMargin, self).__init__()
+        super(Sentence2VecTriplet, self).__init__()
         # activation functions
         if config['output_activation'] is not None:
             self.out_act = activation[config['output_activation']]
@@ -119,7 +119,7 @@ class Sentence2VecTripletMargin(torch.nn.Module):
 
         # initialize tensorboard writer
         writer = SummaryWriter('{}runs/{}/'.format(
-            self.config['output_directory'], self.config['model_type']))
+            self.config['output_directory'], self.config['model_name']))
 
         print('[INFO]: training...')
 
@@ -169,7 +169,7 @@ class Sentence2VecTripletMargin(torch.nn.Module):
 
             # save model
             torch.save(self.state_dict(), '{}{}.pt'.format(
-                self.config['output_directory'], self.config['model_type']))
+                self.config['output_directory'], self.config['model_name']))
 
             # report epoch metrics
             avg_epoch_loss = epoch_loss / i

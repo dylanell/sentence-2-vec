@@ -1,6 +1,6 @@
 dataset_directory: '/home/dylan/datasets/answers/diabetes/'
 output_directory: '/tmp/'
-model_type: 'metric'
+model_name: 'test1'
 model_file: null
 number_epochs: 5
 batch_size: 64
