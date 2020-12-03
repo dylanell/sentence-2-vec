@@ -63,10 +63,6 @@ class Sentence2VecTriplet(torch.nn.Module):
         return z
 
     def train_epochs(self, train_iter):
-        # define loss function
-        loss_fn = torch.nn.TripletMarginLoss(
-            margin=self.config['margin'], p=self.config['p_norm'])
-
         # initialize optimizer
         optimizer = torch.optim.Adam(
             self.parameters(), lr=self.config['learning_rate'],
@@ -111,7 +107,9 @@ class Sentence2VecTriplet(torch.nn.Module):
 
                 if self.config['loss'] == 'margin':
                     # triplet loss using margin from Pytorch
-                    loss = loss_fn(anchor_batch, pos_batch, neg_batch)
+                    loss = torch.nn.functional.triplet_margin_loss(
+                        anchor_batch, pos_batch, neg_batch,
+                        margin=self.config['margin'], p=self.config['p_norm'])
                 elif self.config['loss'] == 'softmax':
                     # distance between anchor and positive batch
                     d_pos = torch.nn.functional.pairwise_distance(
@@ -122,8 +120,9 @@ class Sentence2VecTriplet(torch.nn.Module):
                         anchor_batch, neg_batch, p=self.config['p_norm'])
 
                     # softmax on (d_pos, d_neg)
-                    out = torch.nn.functional.softmax(torch.cat(
-                        [d_pos.unsqueeze(1), d_neg.unsqueeze(1)], dim=1), dim=1)
+                    out = torch.nn.functional.softmax(
+                        torch.cat([d_pos.unsqueeze(1), d_neg.unsqueeze(1)],
+                        dim=1), dim=1)
 
                     # triplet loss from softmax
                     loss = torch.mean(
