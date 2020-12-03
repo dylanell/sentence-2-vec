@@ -40,26 +40,29 @@ class Sentence2VecTriplet(torch.nn.Module):
 
         # compute self attention on word embeddings with transformer encoder
         self.transformer_layer = torch.nn.TransformerEncoderLayer(
-            d_model=config['embed_dimensionality'], nhead=8)
+            d_model=config['embed_dimensionality'], nhead=8, activation='relu')
 
         # n-gram CNN processing 3 words at a time
-        self.textcnn_3 = torch.nn.Conv2d(
-            in_channels=1, out_channels=config['conv_output_channels'],
-            kernel_size=(3, config['embed_dimensionality']))
+        #self.textcnn_3 = torch.nn.Conv2d(
+        #    in_channels=1, out_channels=config['conv_output_channels'],
+        #    kernel_size=(3, config['embed_dimensionality']))
 
         # n-gram processing 4 words at a time
-        self.textcnn_4 = torch.nn.Conv2d(
-            in_channels=1, out_channels=config['conv_output_channels'],
-            kernel_size=(4, config['embed_dimensionality']))
+        #self.textcnn_4 = torch.nn.Conv2d(
+        #    in_channels=1, out_channels=config['conv_output_channels'],
+        #    kernel_size=(4, config['embed_dimensionality']))
 
         # n-gram CNN processing 45words at a time
-        self.textcnn_5 = torch.nn.Conv2d(
-            in_channels=1, out_channels=config['conv_output_channels'],
-            kernel_size=(5, config['embed_dimensionality']))
+        #self.textcnn_5 = torch.nn.Conv2d(
+        #    in_channels=1, out_channels=config['conv_output_channels'],
+        #    kernel_size=(5, config['embed_dimensionality']))
 
         # linear layer to control output representation dimensionality
-        self.linear_layer = torch.nn.Linear(3 * config['conv_output_channels'],
-                                            config['output_dimensionality'])
+        #self.linear_layer = torch.nn.Linear(3 * config['conv_output_channels'],
+        #                                    config['output_dimensionality'])
+
+        self.linear_layer = torch.nn.Linear(config['embed_dimensionality'],
+            config['output_dimensionality'])
 
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -82,30 +85,45 @@ class Sentence2VecTriplet(torch.nn.Module):
         # feed embeddings to transformer encoder
         z2 = self.transformer_layer(z1)
 
+        ### jump to or ###
+
         # bring batch dim to front and add dummy channel dim of 1
-        z3 = torch.unsqueeze(torch.transpose(z2, 1, 0), 1)
+        #z3 = torch.unsqueeze(torch.transpose(z2, 1, 0), 1)
 
         # feed to text cnn with relu activation
-        z4_3 = torch.relu(self.textcnn_3(z3))
-        z4_4 = torch.relu(self.textcnn_4(z3))
-        z4_5 = torch.relu(self.textcnn_5(z3))
+        #z4_3 = torch.relu(self.textcnn_3(z3))
+        #z4_4 = torch.relu(self.textcnn_4(z3))
+        #z4_5 = torch.relu(self.textcnn_5(z3))
 
         # average pooling over time dim and reshape
-        z4_3_pool = torch.squeeze(torch.mean(z4_3, dim=2))
-        z4_4_pool = torch.squeeze(torch.mean(z4_4, dim=2))
-        z4_5_pool = torch.squeeze(torch.mean(z4_5, dim=2))
+        #z4_3_pool = torch.squeeze(torch.mean(z4_3, dim=2))
+        #z4_4_pool = torch.squeeze(torch.mean(z4_4, dim=2))
+        #z4_5_pool = torch.squeeze(torch.mean(z4_5, dim=2))
 
         # concatenate to vectorize channel outputs for each n-gram convolution
-        z4 = torch.cat([z4_3_pool, z4_4_pool, z4_5_pool], dim=1)
+        #z4 = torch.cat([z4_3_pool, z4_4_pool, z4_5_pool], dim=1)
 
         # transform to output dimensionality
-        z5 = self.out_act(self.linear_layer(z4))
+        #z5 = self.out_act(self.linear_layer(z4))
+
+        # normalize outputs
+        #if self.config['normalize']:
+        #    z5 = torch.nn.functional.normalize(z5, dim=1)
+
+        #return z5
+
+        ### or ###
+
+        # sum word vectors
+        z3 = torch.sum(z2, dim=0)
+
+        z4 = self.out_act(self.linear_layer(z3))
 
         # normalize outputs
         if self.config['normalize']:
-            z5 = torch.nn.functional.normalize(z5, dim=1)
+            z4 = torch.nn.functional.normalize(z4, dim=1)
 
-        return z5
+        return z4
 
     def train_epochs(self, train_iter):
         # define loss function
@@ -175,6 +193,8 @@ class Sentence2VecTriplet(torch.nn.Module):
                         torch.abs(out[:, 0]) + torch.abs(1 - out[:, 1]))
 
                 epoch_loss += loss.item()
+
+                print(loss.item())
 
                 # update parameters
                 optimizer.zero_grad()
