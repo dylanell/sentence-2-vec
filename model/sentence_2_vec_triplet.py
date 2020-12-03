@@ -16,14 +16,6 @@ import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-# torch activation functions
-activation_dict = {
-    'relu': torch.nn.ReLU(),
-    'leaky_relu': torch.nn.LeakyReLU(),
-    'tanh': torch.nn.Tanh(),
-    'sigmoid': torch.nn.Sigmoid()
-}
-
 
 class Sentence2VecTriplet(torch.nn.Module):
     def __init__(self, config):
@@ -63,10 +55,6 @@ class Sentence2VecTriplet(torch.nn.Module):
 
         # sum word vectors along sentence length dimension
         z = torch.sum(z, dim=0)
-
-        # output activation
-        if self.config['output_activation'] is not None:
-            z = activation_dict[self.config['output_activation']](z)
 
         # normalize outputs
         if self.config['output_normalize']:
