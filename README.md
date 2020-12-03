@@ -74,3 +74,5 @@ $ jupyter-notebook notebook.ipynb
 11. [When is Nearest Neighbor Meaningful?](https://members.loria.fr/MOBerger/Enseignement/Master2/Exposes/beyer.pdf)
 12. [FaceNet: A Unified Embedding for Face Recognition and Clustering](https://arxiv.org/pdf/1503.03832.pdf)
 13. [Deep Metric Learning Using Triplet Network](https://arxiv.org/pdf/1412.6622.pdf)
+14. [Learning Thematic Similarity Metric Using Triplet Networks](https://pdfs.semanticscholar.org/0846/f3cb0ae555c4f7015dca2fce6a047501154f.pdf?_ga=2.178325220.1389316910.1606965483-939693653.1606965483)
+15. [Siamese Recurrent Architectures for Learning Sentence Similarity](https://www.researchgate.net/publication/307558687_Siamese_Recurrent_Architectures_for_Learning_Sentence_Similarity)
