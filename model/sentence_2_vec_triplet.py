@@ -28,12 +28,6 @@ activation = {
 class Sentence2VecTriplet(torch.nn.Module):
     def __init__(self, config):
         super(Sentence2VecTriplet, self).__init__()
-        # activation functions
-        if config['output_activation'] is not None:
-            self.out_act = activation[config['output_activation']]
-        else:
-            self.out_act = torch.nn.Identity()
-
         # convert index sentences to word embedding matrices
         self.embedding_layer = torch.nn.Embedding(
             len(config['vocab']), config['embed_dimensionality'])
@@ -41,15 +35,9 @@ class Sentence2VecTriplet(torch.nn.Module):
         # compute self attention on word embeddings with transformer encoder
         self.transformer_layers = torch.nn.ModuleList([
             torch.nn.TransformerEncoderLayer(
-                d_model=config['embed_dimensionality'], nhead=8, activation='relu', dropout=0.0)
+                d_model=config['embed_dimensionality'], nhead=8,
+                activation=config['activation'], dropout=0.0)
             for n in range(config['number_transformers'])])
-
-        self.linear_layer = torch.nn.Linear(config['embed_dimensionality'],
-            config['output_dimensionality'])
-
-        # freeze final linear layer weights
-        #for param in list(self.parameters())[-2:]:
-        #    param.requires_grad = False
 
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -73,11 +61,8 @@ class Sentence2VecTriplet(torch.nn.Module):
         for transformer in self.transformer_layers:
             z = transformer(z)
 
-        # sum word vectors
+        # sum word vectors along sentence length dimension
         z = torch.sum(z, dim=0)
-
-        # transform to output dimension
-        z = self.out_act(self.linear_layer(z))
 
         # normalize outputs
         if self.config['normalize']:
