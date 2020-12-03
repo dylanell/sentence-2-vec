@@ -154,8 +154,25 @@ class Sentence2VecTriplet(torch.nn.Module):
                 neg_batch = enc_answer_batch[
                     torch.randperm(batch_size, dtype=torch.long)]
 
-                # triplet loss using margin from Pytorch
-                loss = loss_fn(anchor_batch, pos_batch, neg_batch)
+                if self.config['loss'] == 'margin':
+                    # triplet loss using margin from Pytorch
+                    loss = loss_fn(anchor_batch, pos_batch, neg_batch)
+                elif self.config['loss'] == 'softmax':
+                    # distance between anchor and positive batch
+                    d_pos = torch.nn.functional.pairwise_distance(
+                        anchor_batch, pos_batch, p=self.config['p_norm'])
+
+                    # distance between anchor and negative batch
+                    d_neg = torch.nn.functional.pairwise_distance(
+                        anchor_batch, neg_batch, p=self.config['p_norm'])
+
+                    # softmax on (d_pos, d_neg)
+                    out = torch.nn.functional.softmax(torch.cat(
+                        [d_pos.unsqueeze(1), d_neg.unsqueeze(1)], dim=1), dim=1)
+
+                    # triplet loss from softmax
+                    loss = torch.mean(
+                        torch.abs(out[:, 0]) + torch.abs(1 - out[:, 1]))
 
                 epoch_loss += loss.item()
 

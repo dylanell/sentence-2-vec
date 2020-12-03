@@ -12,5 +12,6 @@ conv_output_channels: 512
 output_dimensionality: 128
 output_activation: relu
 margin: 0.2
-p_norm: 2.0
+p_norm: 1.0
 normalize: True
+loss: softmax
