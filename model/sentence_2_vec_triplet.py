@@ -194,8 +194,6 @@ class Sentence2VecTriplet(torch.nn.Module):
 
                 epoch_loss += loss.item()
 
-                print(loss.item())
-
                 # update parameters
                 optimizer.zero_grad()
                 loss.backward()
