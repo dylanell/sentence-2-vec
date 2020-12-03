@@ -10,6 +10,7 @@ number_workers: 1
 embed_dimensionality: 512
 conv_output_channels: 512
 output_dimensionality: 128
+number_transformers: 6
 output_activation: relu
 margin: 0.2
 p_norm: 1.0

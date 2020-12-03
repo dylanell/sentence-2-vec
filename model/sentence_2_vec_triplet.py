@@ -39,8 +39,10 @@ class Sentence2VecTriplet(torch.nn.Module):
             len(config['vocab']), config['embed_dimensionality'])
 
         # compute self attention on word embeddings with transformer encoder
-        self.transformer_layer = torch.nn.TransformerEncoderLayer(
-            d_model=config['embed_dimensionality'], nhead=8, activation='relu')
+        self.transformer_layers = torch.nn.ModuleList([
+            torch.nn.TransformerEncoderLayer(
+                d_model=config['embed_dimensionality'], nhead=8, activation='relu')
+            for n in range(config['number_transformers'])])
 
         # n-gram CNN processing 3 words at a time
         #self.textcnn_3 = torch.nn.Conv2d(
@@ -61,8 +63,12 @@ class Sentence2VecTriplet(torch.nn.Module):
         #self.linear_layer = torch.nn.Linear(3 * config['conv_output_channels'],
         #                                    config['output_dimensionality'])
 
-        self.linear_layer = torch.nn.Linear(config['embed_dimensionality'],
-            config['output_dimensionality'])
+        #self.linear_layer = torch.nn.Linear(config['embed_dimensionality'],
+        #    config['output_dimensionality'])
+
+        # freeze final linear layer weights
+        #for param in list(self.parameters())[-2:]:
+        #    param.requires_grad = False
 
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -80,10 +86,11 @@ class Sentence2VecTriplet(torch.nn.Module):
 
     def forward(self, x):
         # compute embeddings from indexed inputs
-        z1 = self.embedding_layer(x)
+        z = self.embedding_layer(x)
 
-        # feed embeddings to transformer encoder
-        z2 = self.transformer_layer(z1)
+        # feed embeddings to multiple ocnsecutive transformers
+        for transformer in self.transformer_layers:
+            z = transformer(z)
 
         ### jump to or ###
 
@@ -115,15 +122,16 @@ class Sentence2VecTriplet(torch.nn.Module):
         ### or ###
 
         # sum word vectors
-        z3 = torch.sum(z2, dim=0)
+        z = torch.sum(z, dim=0)
 
-        z4 = self.out_act(self.linear_layer(z3))
+        # transform to output dimension
+        #z4 = self.out_act(self.linear_layer(z3))
 
         # normalize outputs
         if self.config['normalize']:
-            z4 = torch.nn.functional.normalize(z4, dim=1)
+            z = torch.nn.functional.normalize(z, dim=1)
 
-        return z4
+        return z
 
     def train_epochs(self, train_iter):
         # define loss function
