@@ -1,6 +1,6 @@
-dataset_directory: '/home/dylan/datasets/answers/diabetes/'
-output_directory: '/tmp/'
-model_name: 'test1'
+dataset_directory: /home/dylan/datasets/answers/diabetes/
+output_directory: /tmp/
+model_name: test1
 model_file: null
 number_epochs: 20
 batch_size: 64
@@ -9,8 +9,8 @@ weight_decay: 0.01
 number_workers: 1
 embed_dimensionality: 512
 number_transformers: 6
-activation: relu
+output_activation: null
+output_normalize: True
 margin: 0.2
 p_norm: 1.0
-normalize: True
 loss: softmax

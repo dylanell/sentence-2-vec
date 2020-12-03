@@ -17,7 +17,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 # torch activation functions
-activation = {
+activation_dict = {
     'relu': torch.nn.ReLU(),
     'leaky_relu': torch.nn.LeakyReLU(),
     'tanh': torch.nn.Tanh(),
@@ -36,7 +36,7 @@ class Sentence2VecTriplet(torch.nn.Module):
         self.transformer_layers = torch.nn.ModuleList([
             torch.nn.TransformerEncoderLayer(
                 d_model=config['embed_dimensionality'], nhead=8,
-                activation=config['activation'], dropout=0.0)
+                activation='relu', dropout=0.0)
             for n in range(config['number_transformers'])])
 
         self.device = torch.device(
@@ -64,8 +64,12 @@ class Sentence2VecTriplet(torch.nn.Module):
         # sum word vectors along sentence length dimension
         z = torch.sum(z, dim=0)
 
+        # output activation
+        if self.config['output_activation'] is not None:
+            z = activation_dict[self.config['output_activation']](z)
+
         # normalize outputs
-        if self.config['normalize']:
+        if self.config['output_normalize']:
             z = torch.nn.functional.normalize(z, dim=1)
 
         return z
