@@ -87,7 +87,6 @@ class Sentence2VecTriplet(torch.nn.Module):
         if self.config['output_process'] == 'normalize':
             # normalize outputs (all lie on unit ball)
             z = torch.nn.functional.normalize(z, dim=1)
-            # constrain outputs to all lie within unit ball
         elif self.config['output_process'] == 'open_unit_ball_constrain':
             # norm outputs
             z_norms = torch.norm(z, p=2.0, dim=1)
