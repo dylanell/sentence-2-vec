@@ -12,6 +12,9 @@ Sentence2Vec model using triplet margin loss implemented as a torch.nn.Module.
 # TODO: Writing sentence vectors and other data to a dataframe is too memory
 #  intensive. Instead, append data to csv/text files on disk.
 
+# BUG: gradient breaks when constraining outputs within unit ball.
+# Use clipping?
+
 import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
