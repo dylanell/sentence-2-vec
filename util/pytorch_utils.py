@@ -98,3 +98,17 @@ def sub_sampled_distance(v, k, n=10, p=2.0):
     sub_dist = torch.norm(v[:, idxs] - k[:, idxs], dim=1, p=p)
 
     return sub_dist
+
+
+def open_unit_ball_constrain(z):
+    # norm outputs
+    z_norms = torch.norm(z, p=2.0, dim=1)
+
+    # constrain any outputs outside unit ball to just within
+    #z[z_norms > 1] = z[z_norms > 1] / (
+    #    (1+1e-3) * z_norms[z_norms > 1]).unsqueeze(-1)
+
+    # constrain all outputs inside unit ball relative to largest norm
+    z = z / ((1+1e-3) * torch.max(torch.norm(z, p=2.0, dim=1)))
+
+    return z

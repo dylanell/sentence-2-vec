@@ -10,7 +10,7 @@ Sentence2Vec model using triplet margin loss implemented as a torch.nn.Module.
 #  for training and validation sets to use offline.
 
 # TODO: Writing sentence vectors and other data to a dataframe is too memory
-#  intensive. Instead, append data to csv/text files on disk.
+#  intensive. Instead, append small-batch data to csv/text files on disk.
 
 # BUG: gradient breaks when constraining outputs within unit ball.
 # Use clipping?
@@ -45,6 +45,12 @@ metrics = {
     'sub_sample_20_l1': lambda v, k: pu.sub_sampled_distance(v, k, n=20, p=1)
 }
 
+output_processes = {
+    'normalize': lambda z: torch.nn.functional.normalize(z, dim=1),
+    'open_unit_ball_constrain': lambda z: pu.open_unit_ball_constrain(z),
+    'identity': torch.nn.Identity()
+}
+
 
 class Sentence2VecTriplet(torch.nn.Module):
     def __init__(self, config):
@@ -60,6 +66,15 @@ class Sentence2VecTriplet(torch.nn.Module):
                 activation='relu', dropout=0.0)
             for n in range(config['number_transformers'])])
 
+        # initialize transformer activation function
+        self.transformer_act_fn = activations[config['transformer_activation']]
+
+        # initialize distance functiion
+        self.distance_metric_fn = metrics[config['distance_metric']]
+
+        # output process function
+        self.output_process_fn = output_processes[config['output_process']]
+        
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
         print('[INFO]: using {} device'.format(self.device))
@@ -80,26 +95,13 @@ class Sentence2VecTriplet(torch.nn.Module):
 
         # feed embeddings to multiple ocnsecutive transformers
         for transformer in self.transformer_layers:
-            z = activations[self.config['transformer_activation']](
-                transformer(z))
+            z = self.transformer_act_fn(transformer(z))
 
         # sum word vectors along sentence length dimension
         z = torch.sum(z, dim=0)
 
         # apply output process function
-        if self.config['output_process'] == 'normalize':
-            # normalize outputs (all lie on unit ball)
-            z = torch.nn.functional.normalize(z, dim=1)
-        elif self.config['output_process'] == 'open_unit_ball_constrain':
-            # norm outputs
-            z_norms = torch.norm(z, p=2.0, dim=1)
-
-            # constrain any outputs outside unit ball to just within
-            z[z_norms > 1] = z[z_norms > 1] / (
-                (1+1e-3) * z_norms[z_norms > 1]).unsqueeze(-1)
-
-            # constrain all outputs inside unit ball relative to largest norm
-            #z = z / ((1+1e-3) * torch.max(torch.norm(z, p=2.0, dim=1)))
+        z = self.output_process_fn(z)
 
         return z
 
@@ -151,17 +153,14 @@ class Sentence2VecTriplet(torch.nn.Module):
                     loss = \
                         torch.nn.functional.triplet_margin_with_distance_loss(
                             anchor_batch, pos_batch, neg_batch,
-                            distance_function=metrics[
-                                self.config['distance_metric']],
+                            distance_function=self.distance_metric_fn,
                             margin=self.config['margin'])
                 elif self.config['loss'] == 'softmax':
                     # distance between anchor and positive batch
-                    d_pos = metrics[self.config['distance_metric']](
-                        anchor_batch, pos_batch)
+                    d_pos = self.distance_metric_fn(anchor_batch, pos_batch)
 
                     # distance between anchor and negative batch
-                    d_neg = metrics[self.config['distance_metric']](
-                        anchor_batch, neg_batch)
+                    d_neg = self.distance_metric_fn(anchor_batch, neg_batch)
 
                     # softmax on (d_pos, d_neg)
                     out = torch.nn.functional.softmax(
