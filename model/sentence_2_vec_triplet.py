@@ -74,7 +74,7 @@ class Sentence2VecTriplet(torch.nn.Module):
 
         # output process function
         self.output_process_fn = output_processes[config['output_process']]
-        
+
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
         print('[INFO]: using {} device'.format(self.device))
@@ -193,7 +193,7 @@ class Sentence2VecTriplet(torch.nn.Module):
 
             # print epoch metrics
             template = '[INFO]: Epoch {}, Epoch Time {:.2f}s, ' \
-                       'Train Loss: {:.2f}'
+                       'Train Loss: {:.4f}'
             print(template.format(e + 1, epoch_time, avg_epoch_loss))
 
     def generate_sentence_embeddings(self, data_iter, filename):
