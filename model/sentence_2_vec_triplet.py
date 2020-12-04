@@ -16,6 +16,32 @@ import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
+import util.pytorch_utils as pu
+
+
+# torch activation functions
+activations = {
+    'relu': torch.nn.ReLU(),
+    'leaky_relu': torch.nn.LeakyReLU(),
+    'tanh': torch.nn.Tanh(),
+    'sigmoid': torch.nn.Sigmoid(),
+    'identity': torch.nn.Identity()
+}
+
+# distance metric callables
+metrics = {
+    'l2': lambda v, k: torch.norm(v - k, dim=1, p=2.0),
+    'l1': lambda v, k: torch.norm(v - k, dim=1, p=1.0),
+    'cosine': lambda v, k: 1.0 - torch.nn.functional.cosine_similarity(
+        v, k, dim=1),
+    'hyperbolic_l2': lambda v, k: pu.hyperbolic_distance(v, k, p=2),
+    'hyperbolic_l1': lambda v, k: pu.hyperbolic_distance(v, k, p=1),
+    'sub_sample_10_l2': lambda v, k: pu.sub_sampled_distance(v, k, n=10, p=2),
+    'sub_sample_20_l2': lambda v, k: pu.sub_sampled_distance(v, k, n=20, p=2),
+    'sub_sample_10_l1': lambda v, k: pu.sub_sampled_distance(v, k, n=10, p=1),
+    'sub_sample_20_l1': lambda v, k: pu.sub_sampled_distance(v, k, n=20, p=1)
+}
+
 
 class Sentence2VecTriplet(torch.nn.Module):
     def __init__(self, config):
@@ -51,14 +77,27 @@ class Sentence2VecTriplet(torch.nn.Module):
 
         # feed embeddings to multiple ocnsecutive transformers
         for transformer in self.transformer_layers:
-            z = transformer(z)
+            z = activations[self.config['transformer_activation']](
+                transformer(z))
 
         # sum word vectors along sentence length dimension
         z = torch.sum(z, dim=0)
 
-        # normalize outputs
-        if self.config['output_normalize']:
+        # apply output process function
+        if self.config['output_process'] == 'normalize':
+            # normalize outputs (all lie on unit ball)
             z = torch.nn.functional.normalize(z, dim=1)
+            # constrain outputs to all lie within unit ball
+        elif self.config['output_process'] == 'open_unit_ball_constrain':
+            # norm outputs
+            z_norms = torch.norm(z, p=2.0, dim=1)
+
+            # constrain any outputs outside unit ball to just within
+            z[z_norms > 1] = z[z_norms > 1] / (
+                (1+1e-3) * z_norms[z_norms > 1]).unsqueeze(-1)
+
+            # constrain all outputs inside unit ball relative to largest norm
+            #z = z / ((1+1e-3) * torch.max(torch.norm(z, p=2.0, dim=1)))
 
         return z
 
@@ -107,17 +146,20 @@ class Sentence2VecTriplet(torch.nn.Module):
 
                 if self.config['loss'] == 'margin':
                     # triplet loss using margin from Pytorch
-                    loss = torch.nn.functional.triplet_margin_loss(
-                        anchor_batch, pos_batch, neg_batch,
-                        margin=self.config['margin'], p=self.config['p_norm'])
+                    loss = \
+                        torch.nn.functional.triplet_margin_with_distance_loss(
+                            anchor_batch, pos_batch, neg_batch,
+                            distance_function=metrics[
+                                self.config['distance_metric']],
+                            margin=self.config['margin'])
                 elif self.config['loss'] == 'softmax':
                     # distance between anchor and positive batch
-                    d_pos = torch.nn.functional.pairwise_distance(
-                        anchor_batch, pos_batch, p=self.config['p_norm'])
+                    d_pos = metrics[self.config['distance_metric']](
+                        anchor_batch, pos_batch)
 
                     # distance between anchor and negative batch
-                    d_neg = torch.nn.functional.pairwise_distance(
-                        anchor_batch, neg_batch, p=self.config['p_norm'])
+                    d_neg = metrics[self.config['distance_metric']](
+                        anchor_batch, neg_batch)
 
                     # softmax on (d_pos, d_neg)
                     out = torch.nn.functional.softmax(
