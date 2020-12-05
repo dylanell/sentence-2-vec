@@ -47,8 +47,8 @@ metrics = {
 
 output_processes = {
     'normalize': lambda z: torch.nn.functional.normalize(z, dim=1),
+    'identity': torch.nn.Identity(),
     'open_unit_ball_constrain': lambda z: pu.open_unit_ball_constrain(z),
-    'identity': torch.nn.Identity()
 }
 
 
@@ -149,6 +149,11 @@ class Sentence2VecTriplet(torch.nn.Module):
                     torch.randperm(batch_size, dtype=torch.long)]
 
                 if self.config['loss'] == 'margin':
+                    # loss from: FaceNet: A Unified Embedding for Face
+                    # Recognition and Clustering
+
+                    # 'Margin Ranking Loss'
+
                     # triplet loss using margin from Pytorch
                     loss = \
                         torch.nn.functional.triplet_margin_with_distance_loss(
@@ -156,6 +161,12 @@ class Sentence2VecTriplet(torch.nn.Module):
                             distance_function=self.distance_metric_fn,
                             margin=self.config['margin'])
                 elif self.config['loss'] == 'softmax':
+                    # loss from: 'Learning Thematic Similarity Metric Using
+                    # Triplet Networks' and 'DEEP METRIC LEARNING USING TRIPLET
+                    # NETWORK'
+
+                    # 'Ratio Loss'
+
                     # distance between anchor and positive batch
                     d_pos = self.distance_metric_fn(anchor_batch, pos_batch)
 
