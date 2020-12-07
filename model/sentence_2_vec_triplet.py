@@ -168,7 +168,7 @@ class Sentence2VecTriplet(torch.nn.Module):
                             anchor_batch, pos_batch, neg_batch,
                             distance_function=self.distance_metric_fn,
                             margin=self.config['margin'])
-                elif self.config['loss'] == 'softmax':
+                elif self.config['loss'] == 'ratio':
                     # loss from: 'Learning Thematic Similarity Metric Using
                     # Triplet Networks' and 'DEEP METRIC LEARNING USING TRIPLET
                     # NETWORK'
@@ -186,7 +186,7 @@ class Sentence2VecTriplet(torch.nn.Module):
                         torch.cat([d_pos.unsqueeze(1), d_neg.unsqueeze(1)],
                         dim=1), dim=1)
 
-                    # triplet loss from softmax
+                    # ratio loss
                     loss = torch.mean(
                         torch.abs(out[:, 0]) + torch.abs(1 - out[:, 1]))
 
