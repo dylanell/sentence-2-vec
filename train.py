@@ -19,7 +19,8 @@ def main():
     # build data iterators and vocabulary object
     train_iter, val_iter, vocab = build_processed_qa_dataloaders(
         data_file, batch_size=config['batch_size'],
-        embedding_type=config['embedding_type'])
+        embedding_type=config['embedding_type'],
+        cache_dir=config['output_directory'])
 
     # add vocab to config data
     config['vocab'] = vocab
@@ -27,8 +28,9 @@ def main():
     # initialize model
     model = Sentence2VecTriplet(config)
 
-    # train model
-    model.train_epochs(train_iter)
+    # train model if we have trainable parameters
+    if config['number_transformers'] > 0:
+        model.train_epochs(train_iter)
 
     # save learned sentence vectors for training and validation splits
     model.generate_sentence_embeddings(train_iter, 'train')

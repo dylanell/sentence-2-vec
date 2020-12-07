@@ -7,7 +7,7 @@ import torchtext
 
 
 def build_processed_qa_dataloaders(data_file, split=0.7, batch_size=32,
-        embedding_type='custom'):
+        embedding_type='custom', cache_dir='/tmp/'):
     """
     Builds a training and validation dataloader for QA pairs pre-processed
     text data ready to be tokenized by whitespace.
@@ -40,7 +40,7 @@ def build_processed_qa_dataloaders(data_file, split=0.7, batch_size=32,
     # the vocab object to create vectors of word indices
     texts_field.build_vocab(train_ds,
         vectors=embedding_type if embedding_type != 'custom' else None,
-        vectors_cache='/tmp/' if embedding_type != 'custom' else None)
+        vectors_cache=cache_dir if embedding_type != 'custom' else None)
     vocab = texts_field.vocab
 
     # construct training dataset iterator
