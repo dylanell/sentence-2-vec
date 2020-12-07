@@ -22,6 +22,11 @@ import util.pytorch_utils as pu
 class Sentence2VecTriplet(torch.nn.Module):
     def __init__(self, config):
         super(Sentence2VecTriplet, self).__init__()
+        # try to get a gpu otherwise use cpu
+        self.device = torch.device(
+            'cuda:0' if torch.cuda.is_available() else 'cpu')
+        print('[INFO]: using {} device'.format(self.device))
+
         # construct embedding layer
         if config['embedding_type'] == 'custom':
             # create custom embedding weights
@@ -29,7 +34,7 @@ class Sentence2VecTriplet(torch.nn.Module):
                 len(config['vocab']), config['embedding_dim'])
         else:
             # load pretrained embedding weights
-            self.embedding = lambda x: self.config['vocab'].vectors[x]
+            self.embedding = lambda x: self.config['vocab'].vectors[x].to(self.device)
 
         # compute self attention on word embeddings with transformer encoder
         self.transformer_layers = torch.nn.ModuleList([
@@ -81,11 +86,6 @@ class Sentence2VecTriplet(torch.nn.Module):
             print('[INFO]: unsupported output process \'{}\''.format(
                 config['output_process']))
             exit()
-
-        # try to get a gpu otherwise use cpu
-        self.device = torch.device(
-            'cuda:0' if torch.cuda.is_available() else 'cpu')
-        print('[INFO]: using {} device'.format(self.device))
 
         # if model file provided, load pretrained params
         if config['model_file']:
