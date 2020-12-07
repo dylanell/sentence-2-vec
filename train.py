@@ -18,7 +18,8 @@ def main():
 
     # build data iterators and vocabulary object
     train_iter, val_iter, vocab = build_processed_qa_dataloaders(
-        data_file, batch_size=config['batch_size'])
+        data_file, batch_size=config['batch_size'],
+        embedding_type=config['embedding_type'])
 
     # add vocab to config data
     config['vocab'] = vocab

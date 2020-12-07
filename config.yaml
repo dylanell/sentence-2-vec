@@ -1,5 +1,5 @@
-dataset_directory: '/wheatley/dylan/datasets/answers_diabetes/'
-output_directory: '/home/dylan/model_files/sentence2vec/'
+dataset_directory: '/home/dylan/datasets/answers/diabetes/'
+output_directory: '/tmp/'
 model_name: 'softmax_tanh_l1'
 model_file: null
 number_epochs: 100
@@ -7,10 +7,12 @@ batch_size: 64
 learning_rate: 0.0001
 weight_decay: 0.01
 number_workers: 4
-embed_dimensionality: 512
+embedding_type: 'fasttext.simple.300d'
+embedding_dim: 300
 number_transformers: 2
+number_attention_heads: 10
 transformer_activation: 'tanh'
-output_process: 'normalize'
 distance_metric: 'l1'
+output_process: 'normalize'
 margin: 0.2
 loss: 'softmax'

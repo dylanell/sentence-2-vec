@@ -9,9 +9,6 @@ Sentence2Vec model using triplet margin loss implemented as a torch.nn.Module.
 #  QUICK FIX: For now, save trained word embeddings and sentence embeddings
 #  for training and validation sets to use offline.
 
-# TODO: Writing sentence vectors and other data to a dataframe is too memory
-#  intensive. Instead, append small-batch data to csv/text files on disk.
-
 # BUG: gradient breaks when constraining outputs within unit ball.
 # Use clipping?
 
@@ -22,59 +19,70 @@ from torch.utils.tensorboard import SummaryWriter
 import util.pytorch_utils as pu
 
 
-# torch activation functions
-activations = {
-    'relu': torch.nn.ReLU(),
-    'leaky_relu': torch.nn.LeakyReLU(),
-    'tanh': torch.nn.Tanh(),
-    'sigmoid': torch.nn.Sigmoid(),
-    'identity': torch.nn.Identity()
-}
-
-# distance metric callables
-metrics = {
-    'l2': lambda v, k: torch.norm(v - k, dim=1, p=2.0),
-    'l1': lambda v, k: torch.norm(v - k, dim=1, p=1.0),
-    'cosine': lambda v, k: 1.0 - torch.nn.functional.cosine_similarity(
-        v, k, dim=1),
-    'hyperbolic_l2': lambda v, k: pu.hyperbolic_distance(v, k, p=2),
-    'hyperbolic_l1': lambda v, k: pu.hyperbolic_distance(v, k, p=1),
-    'sub_sample_10_l2': lambda v, k: pu.sub_sampled_distance(v, k, n=10, p=2),
-    'sub_sample_20_l2': lambda v, k: pu.sub_sampled_distance(v, k, n=20, p=2),
-    'sub_sample_10_l1': lambda v, k: pu.sub_sampled_distance(v, k, n=10, p=1),
-    'sub_sample_20_l1': lambda v, k: pu.sub_sampled_distance(v, k, n=20, p=1)
-}
-
-output_processes = {
-    'normalize': lambda z: torch.nn.functional.normalize(z, dim=1),
-    'identity': torch.nn.Identity(),
-    'open_unit_ball_constrain': lambda z: pu.open_unit_ball_constrain(z),
-}
-
-
 class Sentence2VecTriplet(torch.nn.Module):
     def __init__(self, config):
         super(Sentence2VecTriplet, self).__init__()
-        # convert index sentences to word embedding matrices
-        self.embedding_layer = torch.nn.Embedding(
-            len(config['vocab']), config['embed_dimensionality'])
+        # construct embedding layer
+        if config['embedding_type'] == 'custom':
+            # create custom embedding weights
+            self.embedding = torch.nn.Embedding(
+                len(config['vocab']), config['embedding_dim'])
+        else:
+            # load pretrained embedding weights
+            self.embedding = lambda x: self.config['vocab'].vectors[x]
 
         # compute self attention on word embeddings with transformer encoder
         self.transformer_layers = torch.nn.ModuleList([
             torch.nn.TransformerEncoderLayer(
-                d_model=config['embed_dimensionality'], nhead=8,
+                d_model=config['embedding_dim'],
+                nhead=config['number_attention_heads'],
                 activation='relu', dropout=0.0)
             for n in range(config['number_transformers'])])
 
         # initialize transformer activation function
-        self.transformer_act_fn = activations[config['transformer_activation']]
+        if config['transformer_activation'] == 'relu':
+            self.transformer_act_fn = torch.nn.ReLU()
+        elif config['transformer_activation'] == 'leaky_relu':
+            self.transformer_act_fn = torch.nn.LeakyReLU()
+        elif config['transformer_activation'] == 'tanh':
+            self.transformer_act_fn = torch.nn.Tanh()
+        elif config['transformer_activation'] == 'sigmoid':
+            self.transformer_act_fn = torch.nn.Sigmoid()
+        elif config['transformer_activation'] == 'identity':
+            self.transformer_act_fn = torch.nn.Identity()
+        else:
+            print('[INFO]: unsupported activation \'{}\''.format(
+                config['transformer_activation']))
+            exit()
 
-        # initialize distance functiion
-        self.distance_metric_fn = metrics[config['distance_metric']]
+        # initialize distance function
+        if config['distance_metric'] == 'l2':
+            self.distance_metric_fn = \
+                lambda v, k: torch.norm(v - k, dim=1, p=2.0)
+        elif config['distance_metric'] == 'l1':
+            self.distance_metric_fn = \
+                lambda v, k: torch.norm(v - k, dim=1, p=1.0)
+        elif config['distance_metric'] == 'cosine':
+            self.distance_metric_fn = \
+                lambda v, k: 1.0 - torch.nn.functional.cosine_similarity(
+                    v, k, dim=1)
+        else:
+            print('[INFO]: unsupported metric \'{}\''.format(
+                config['distance_metric']))
+            exit()
 
         # output process function
-        self.output_process_fn = output_processes[config['output_process']]
+        if config['output_process'] == 'normalize':
+            self.output_process_fn = \
+                lambda z: torch.nn.functional.normalize(z, dim=1)
+        elif config['output_process'] == 'identity':
+            self.output_process_fn = torch.nn.Identity()
+        else:
+            print('[INFO]: unsupported output process \'{}\''.format(
+                config['output_process']))
+            exit()
 
+        # try to get a gpu otherwise use cpu
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
         print('[INFO]: using {} device'.format(self.device))
@@ -91,7 +99,7 @@ class Sentence2VecTriplet(torch.nn.Module):
 
     def forward(self, x):
         # compute embeddings from indexed inputs
-        z = self.embedding_layer(x)
+        z = self.embedding(x)
 
         # feed embeddings to multiple ocnsecutive transformers
         for transformer in self.transformer_layers:
