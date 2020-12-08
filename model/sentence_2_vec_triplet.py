@@ -189,6 +189,10 @@ class Sentence2VecTriplet(torch.nn.Module):
                     # ratio loss
                     loss = torch.mean(
                         torch.abs(out[:, 0]) + torch.abs(1 - out[:, 1]))
+                else:
+                    print('[INFO]: unsupported loss\'{}\''.format(
+                        self.config['loss']))
+                    exit()
 
                 epoch_loss += loss.item()
 
