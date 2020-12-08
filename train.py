@@ -29,7 +29,7 @@ def main():
     model = Sentence2VecTriplet(config)
 
     # train model if we have trainable parameters
-    if config['number_transformers'] > 0:
+    if len(list(model.parameters())) > 0:
         model.train_epochs(train_iter)
 
     # save learned sentence vectors for training and validation splits
