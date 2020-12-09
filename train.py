@@ -32,8 +32,7 @@ def main():
     if len(list(model.parameters())) > 0:
         model.train_epochs(train_iter)
 
-    # save learned sentence vectors for training and validation splits
-    model.generate_sentence_embeddings(train_iter, 'train')
+    # save learned sentence vectors for validation split
     model.generate_sentence_embeddings(val_iter, 'val')
 
 
