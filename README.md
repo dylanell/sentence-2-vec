@@ -58,7 +58,7 @@ $ python train.py
 This project is accompanied by a Jupyter notebook that explores the learned
 sentence representations by performing data visualizations and cluster
 analysis. If Github fails to render the notebook itself, you can also view it
-by pasting the notebook URL into https://nbviewer.jupyter.org/. The following
+by pasting the [notebook URL](https://github.com/dylanell/sentence-2-vec/blob/main/notebook.ipynb) into https://nbviewer.jupyter.org/. The following
 command to start the Jupyter notebook server in your browser:
 
 ```
