@@ -1,5 +1,10 @@
 # sentence-2-vec
-Learning sentence representations from domain-specific QA pairs scraped from the web.
+Learning sentence representations from domain-specific QA pairs scraped from
+the web.
+
+| ![](images/clusters.png) |
+| :-: |
+| *Some clusters discovered from "Diabetes" topic questions on answers.com.* |
 
 ### Environment:
 
@@ -14,11 +19,11 @@ Learning sentence representations from domain-specific QA pairs scraped from the
 ### QA Pairs Text Dataset Format:
 
 This project assumes you have a dataset of question-answer pairs pre
- -configured locally on your machine and saved as a `csv` file. My [dataset
-  -helpers](https://github.com/dylanell/dataset-helpers) Github project also
-   contains tools that perform this local configuration automatically for data
-    scraped from [answers.com](https://www.answers.com/). The `csv` file should
-     be in the following format:
+-configured locally on your machine and saved as a `csv` file. My
+[dataset-helpers](https://github.com/dylanell/daaset-helpers) Github project
+also contains tools that perform this local configuration automatically for
+data scraped from [answers.com](https://www.answers.com/). The `csv` file
+should be in the following format:
 
 ```
 question, answer
@@ -28,21 +33,21 @@ question two ?, answer two .
 ```
 
 The dataset processing in this project assumes the text data in each row of
- the `csv` datafile is ready to be tokenized by whitespace alone. For example
- , row one of the example `csv` file above would yield a tokenized question
-  example as `['question', 'one', '?']`. It is important to note that if the
-   question of row one was `question one?`, the tokenization in this project
-    would yield `['question', 'one?']`, therefore punctuation must be
-     pre-processed as separate words and separated by a 'space' character
-      prior to generating the `csv` datafile for this project.
+the `csv` datafile is ready to be tokenized by whitespace alone. For example,
+row one of the example `csv` file above would yield a tokenized question
+example as `['question', 'one', '?']`. It is important to note that if the
+question of row one was `question one?`, the tokenization in this project would
+yield `['question', 'one?']`, therefore punctuation must be pre-processed as
+separate words and separated by a 'space' character prior to generating the
+`csv` datafile for this project.
 
  ### Training:
 
- Training options and hyperparameters are pulled from the `config.yaml` file
-  and can be changed by editing the file contents. The `train.py` script
-   accepts only several specific values for the `model_type` variable in
-    `config.yaml` corresponding to the type of NLP model you would like to
-     train. Train a model by running the command:
+Training options and hyperparameters are pulled from the `config.yaml` file and
+can be changed by editing the file contents. The `train.py` script accepts only
+several specific values for the `model_type` variable in `config.yaml`
+corresponding to the type of NLP model you would like to train. Train a model
+by running the command:
 
 ```
 $ python train.py
@@ -53,9 +58,8 @@ $ python train.py
 This project is accompanied by a Jupyter notebook that explores the learned
 sentence representations by performing data visualizations and cluster
 analysis. If Github fails to render the notebook itself, you can also view it
-by pasting the notebook URL into https://nbviewer.jupyter.org/. The following command
-to start the Jupyter notebook server in
-your browser:
+by pasting the notebook URL into https://nbviewer.jupyter.org/. The following
+command to start the Jupyter notebook server in your browser:
 
 ```
 $ jupyter-notebook notebook.ipynb
