@@ -20,7 +20,7 @@ the web.
 
 This project assumes you have a dataset of question-answer pairs pre
 -configured locally on your machine and saved as a `csv` file. My
-[dataset-helpers](https://github.com/dylanell/daaset-helpers) Github project
+[dataset-helpers](https://github.com/dylanell/dataset-helpers) Github project
 also contains tools that perform this local configuration automatically for
 data scraped from [answers.com](https://www.answers.com/). The `csv` file
 should be in the following format:
