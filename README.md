@@ -8,13 +8,13 @@ the web.
 
 ### Environment:
 
-- Python 3.7.4
+- Python 3
 
-### Python Packages:
+### Install Python Packages:
 
-- pytorch
-- torchtext
-- pyyaml
+```
+$ pip install -r requirements.txt
+```
 
 ### QA Pairs Text Dataset Format:
 
