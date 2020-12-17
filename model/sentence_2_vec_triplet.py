@@ -28,18 +28,13 @@ class Sentence2VecTriplet(torch.nn.Module):
         print('[INFO]: using {} device'.format(self.device))
 
         # construct embedding layer
-        if config['embedding_type'] == 'custom':
-            # create custom embedding weights
-            self.embedding = torch.nn.Embedding(
-                len(config['vocab']), config['embedding_dim'])
-        else:
-            # load pretrained embedding weights
-            self.embedding = lambda x: self.config['vocab'].vectors[x].to(self.device)
+        self.embedding = torch.nn.Embedding.from_pretrained(
+            config['wordvecs'], freeze=config['freeze_wordvecs'])
 
         # compute self attention on word embeddings with transformer encoder
         self.transformer_layers = torch.nn.ModuleList([
             torch.nn.TransformerEncoderLayer(
-                d_model=config['embedding_dim'],
+                d_model=config['wordvec_dim'],
                 nhead=config['number_attention_heads'],
                 activation='relu', dropout=0.0)
             for n in range(config['number_transformers'])])
@@ -205,7 +200,7 @@ class Sentence2VecTriplet(torch.nn.Module):
             epoch_time = time.time() - epoch_start
 
             # save model
-            torch.save(self.state_dict(), '{}{}.pt'.format(
+            torch.save(self.state_dict(), '{}{}_params.pt'.format(
                 self.config['output_directory'], self.config['model_name']))
 
             # report epoch metrics
@@ -283,3 +278,31 @@ class Sentence2VecTriplet(torch.nn.Module):
         answer_tok_fp.close()
         question_vec_fp.close()
         answer_vec_fp.close()
+
+    def save_full_model_state(self):
+        print('[INFO]: writing full model state files...')
+        
+        # save model
+        torch.save(self.state_dict(), '{}{}_params.pt'.format(
+            self.config['output_directory'], self.config['model_name']))
+
+        # path to vocab file
+        vocab_file = '{}{}_vocab.txt'.format(
+            self.config['output_directory'], self.config['model_name'])
+
+        # save vocab
+        with open(vocab_file, 'w') as fp:
+            for word, index in dict(self.config['vocab'].stoi).items():
+                fp.write('{},{}\n'.format(word, index))
+
+        # path to word vector file
+        wordvec_file = '{}{}_wordvecs.txt'.format(
+            self.config['output_directory'], self.config['model_name'])
+
+        # save wordvecs
+        with open(wordvec_file, 'w') as fp:
+            for i, wordvec in enumerate(self.embedding.weight):
+                word = self.config['vocab'].itos[i]
+                wordvec_str = ' '.join([
+                    str(n) for n in wordvec.detach().cpu().numpy()])
+                fp.write('{} {}\n'.format(word, wordvec_str))

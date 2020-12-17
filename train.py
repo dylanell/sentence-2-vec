@@ -17,13 +17,15 @@ def main():
     data_file = '{}qa_pairs_processed.csv'.format(config['dataset_directory'])
 
     # build data iterators and vocabulary object
-    train_iter, val_iter, vocab = build_processed_qa_dataloaders(
+    train_iter, val_iter, vocab, wordvecs = build_processed_qa_dataloaders(
         data_file, batch_size=config['batch_size'],
-        embedding_type=config['embedding_type'],
+        wordvec_file=config['wordvec_file'],
+        wordvec_dim=config['wordvec_dim'],
         cache_dir=config['output_directory'])
 
-    # add vocab to config data
+    # store vocab and wordvecs in config for model
     config['vocab'] = vocab
+    config['wordvecs'] = wordvecs
 
     # initialize model
     model = Sentence2VecTriplet(config)
@@ -31,6 +33,9 @@ def main():
     # train model if we have trainable parameters
     if len(list(model.parameters())) > 0:
         model.train_epochs(train_iter)
+
+    # write trained word vectors to file
+    model.save_full_model_state()
 
     # save learned sentence vectors for validation split
     model.generate_sentence_embeddings(val_iter, 'val')

@@ -1,5 +1,8 @@
 dataset_directory: '/home/dylan/datasets/answers/diabetes/'
 output_directory: '/tmp/'
+wordvec_file: '/home/dylan/wordvecs/glove.6B.300d.txt'
+freeze_wordvecs: True
+wordvec_dim: 300
 model_name: 'test'
 model_file: null
 number_epochs: 100
@@ -7,8 +10,6 @@ batch_size: 64
 learning_rate: 0.0001
 weight_decay: 0.01
 number_workers: 4
-embedding_type: 'glove.6B.300d'
-embedding_dim: 300
 number_transformers: 2
 number_attention_heads: 10
 transformer_activation: 'tanh'

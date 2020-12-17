@@ -4,10 +4,12 @@ Pytorch utility functions.
 
 import torch
 import torchtext
+import random
 
 
-def build_processed_qa_dataloaders(data_file, split=0.7, batch_size=32,
-        embedding_type='custom', cache_dir='/tmp/'):
+def build_processed_qa_dataloaders(
+        data_file, split=0.7, batch_size=32, random_seed=42,
+        wordvec_file=None, wordvec_dim=300, cache_dir='/tmp/'):
     """
     Builds a training and validation dataloader for QA pairs pre-processed
     text data ready to be tokenized by whitespace.
@@ -16,6 +18,9 @@ def build_processed_qa_dataloaders(data_file, split=0.7, batch_size=32,
     :param batch_size: size of batch returned by dataloaders (default=32)
     :return: training dataloader, validation dataloader
     """
+
+    # seed rng
+    random.seed(random_seed)
 
     # create a field for processing texts
     texts_field = torchtext.data.Field()
@@ -33,15 +38,21 @@ def build_processed_qa_dataloaders(data_file, split=0.7, batch_size=32,
 
     # split dataset into training and validation splits
     train_ds, val_ds = dataset.split(split_ratio=split)
+    #train_ds = dataset
 
     # build vocabulary for the TEXTS field using only words from the training
     # split (used for both questions and answers)
     # NOTE: this is REQUIRED before creating an iterator since an iterator uses
     # the vocab object to create vectors of word indices
-    texts_field.build_vocab(train_ds,
-        vectors=embedding_type if embedding_type != 'custom' else None,
-        vectors_cache=cache_dir if embedding_type != 'custom' else None)
-    vocab = texts_field.vocab
+    if wordvec_file is not None:
+        # build vocab from pretrained word vectors
+        texts_field.build_vocab(
+            train_ds,
+            vectors=torchtext.vocab.Vectors(wordvec_file, cache_dir),
+            vectors_cache=cache_dir)
+    else:
+        # build custom vocab from training data
+        texts_field.build_vocab(train_ds)
 
     # construct training dataset iterator
     train_iter = torchtext.data.Iterator(
@@ -57,4 +68,17 @@ def build_processed_qa_dataloaders(data_file, split=0.7, batch_size=32,
         shuffle=False
     )
 
-    return train_iter, val_iter, vocab
+    # get vocab
+    vocab = texts_field.vocab
+
+    # add wordvecs to config data
+    if wordvec_file is not None:
+        # wordvecs loaded from wordvec file
+        wordvecs = texts_field.vocab.vectors
+    else:
+        # wordvecs constructed from train_ds vocab and normal distribution
+        wordvecs = torch.normal(
+            mean=0, std=1,
+            size=(len(vocab), wordvec_dim))
+
+    return train_iter, val_iter, vocab, wordvecs
