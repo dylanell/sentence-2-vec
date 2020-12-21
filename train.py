@@ -40,6 +40,9 @@ def main():
     # save learned sentence vectors for validation split
     model.generate_sentence_embeddings(val_iter, 'val')
 
+    # save learned sentence vectors for training split
+    model.generate_sentence_embeddings(train_iter, 'train')
+
 
 if __name__ == '__main__':
     main()
