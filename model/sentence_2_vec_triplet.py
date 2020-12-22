@@ -2,16 +2,6 @@
 Sentence2Vec model using triplet margin loss implemented as a torch.nn.Module.
 """
 
-# TODO: build_vocab is nondeterministic, therefore when trying to load a
-#  pretrained model there can be a vocab size mismatch or indices will be
-#  different than during training. FIX: Figure out if vocab can be generated
-#  deterministically or provide manually constructed vocab to Field object.
-#  QUICK FIX: For now, save trained word embeddings and sentence embeddings
-#  for training and validation sets to use offline.
-
-# BUG: gradient breaks when constraining outputs within unit ball.
-# Use clipping?
-
 import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -66,11 +56,6 @@ class Sentence2VecTriplet(torch.nn.Module):
             print('[INFO]: unsupported metric \'{}\''.format(
                 config['distance_metric']))
             exit()
-
-        # if model file provided, load pretrained params
-        if config['model_file']:
-            self.model.load_state_dict(
-                torch.load(config['model_file'], map_location=self.device))
 
         # send model to found device
         self.to(self.device)

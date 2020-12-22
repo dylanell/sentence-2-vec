@@ -4,7 +4,6 @@ wordvec_file: '/home/dylan/wordvecs/glove.6B.300d.txt'
 freeze_wordvecs: True
 wordvec_dim: 300
 model_name: 'test'
-model_file: null
 number_epochs: 0
 batch_size: 64
 learning_rate: 0.0001
