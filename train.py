@@ -24,7 +24,14 @@ def main():
         wordvec_dim=config['wordvec_dim'],
         cache_dir=config['output_directory'])
 
-    # store vocab and wordvecs in config for model
+    # save vocab
+    vocab_file = '{}{}_vocab.txt'.format(
+        config['output_directory'], config['model_name'])
+    with open(vocab_file, 'w') as fp:
+        for word, index in dict(vocab.stoi).items():
+            fp.write('{},{}\n'.format(word, index))
+
+    # store wordvecs in config for model
     config['wordvecs'] = wordvecs
 
     # initialize model
