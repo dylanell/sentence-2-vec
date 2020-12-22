@@ -57,29 +57,14 @@ class Sentence2VecTriplet(torch.nn.Module):
 
         # initialize distance function
         if config['distance_metric'] == 'l2':
-            self.distance_metric_fn = \
-                lambda v, k: torch.norm(v - k, dim=1, p=2.0)
+            self.distance_metric_fn = torch.nn.PairwiseDistance(p=2.0)
         elif config['distance_metric'] == 'l1':
-            self.distance_metric_fn = \
-                lambda v, k: torch.norm(v - k, dim=1, p=1.0)
+            self.distance_metric_fn = torch.nn.PairwiseDistance(p=1.0)
         elif config['distance_metric'] == 'cosine':
-            self.distance_metric_fn = \
-                lambda v, k: 1.0 - torch.nn.functional.cosine_similarity(
-                    v, k, dim=1)
+            self.distance_metric_fn = pu.CosineDistance()
         else:
             print('[INFO]: unsupported metric \'{}\''.format(
                 config['distance_metric']))
-            exit()
-
-        # output process function
-        if config['output_process'] == 'normalize':
-            self.output_process_fn = \
-                lambda z: torch.nn.functional.normalize(z, dim=1)
-        elif config['output_process'] == 'identity':
-            self.output_process_fn = torch.nn.Identity()
-        else:
-            print('[INFO]: unsupported output process \'{}\''.format(
-                config['output_process']))
             exit()
 
         # if model file provided, load pretrained params
@@ -103,8 +88,8 @@ class Sentence2VecTriplet(torch.nn.Module):
         # sum word vectors along sentence length dimension
         z = torch.sum(z, dim=0)
 
-        # apply output process function
-        z = self.output_process_fn(z)
+        # anormalize outputs
+        z = torch.nn.functional.normalize(z, dim=1)
 
         return z
 
@@ -199,10 +184,6 @@ class Sentence2VecTriplet(torch.nn.Module):
             # compute epoch time
             epoch_time = time.time() - epoch_start
 
-            # save model
-            torch.save(self.state_dict(), '{}{}_params.pt'.format(
-                self.config['output_directory'], self.config['model_name']))
-
             # report epoch metrics
             avg_epoch_loss = epoch_loss / i
 
@@ -213,96 +194,3 @@ class Sentence2VecTriplet(torch.nn.Module):
             template = '[INFO]: Epoch {}, Epoch Time {:.2f}s, ' \
                        'Train Loss: {:.4f}'
             print(template.format(e + 1, epoch_time, avg_epoch_loss))
-
-    def generate_sentence_embeddings(self, data_iter, filename):
-        # open file objects in append mode
-        question_tok_fp = open(
-            '{}{}_{}_question_tok.txt'.format(
-                self.config['output_directory'], self.config['model_name'],
-                filename), 'w+')
-        answer_tok_fp = open(
-            '{}{}_{}_answer_tok.txt'.format(
-                self.config['output_directory'], self.config['model_name'],
-                filename), 'w+')
-        question_vec_fp = open(
-            '{}{}_{}_question_vec.txt'.format(
-                self.config['output_directory'], self.config['model_name'],
-                filename), 'w+')
-        answer_vec_fp = open(
-            '{}{}_{}_answer_vec.txt'.format(
-                self.config['output_directory'], self.config['model_name'],
-                filename), 'w+')
-
-        print('[INFO]: writing \'{}\' sentence embeddings...'
-              .format(filename))
-
-        for i, data in enumerate(data_iter):
-            # parse batch
-            question_idx = data.question.to(self.device)
-            answer_idx = data.answer.to(self.device)
-
-            # feed question and answer through model
-            question_vec = self.forward(question_idx)
-            answer_vec = self.forward(answer_idx)
-
-            # convert question indices to list of word tokens
-            question_tok = [
-                ' '.join([self.config['vocab'].itos[idx] for idx in s
-                          if idx != 1]) for s in question_idx.T.tolist()]
-
-            # convert answer indices to list of word tokens
-            answer_tok = [
-                ' '.join([self.config['vocab'].itos[idx] for idx in s
-                          if idx != 1]) for s in answer_idx.T.tolist()]
-
-            # write question token data for this batch
-            for tok in question_tok:
-                question_tok_fp.write('{}\n'.format(tok))
-
-            # write answer token data for this batch
-            for tok in answer_tok:
-                answer_tok_fp.write('{}\n'.format(tok))
-
-            # write question vec data
-            for vec in question_vec:
-                line = ','.join([str(n) for n in vec.tolist()])
-                question_vec_fp.write('{}\n'.format(line))
-
-            # write answer vec data
-            for vec in answer_vec:
-                line = ','.join([str(n) for n in vec.tolist()])
-                answer_vec_fp.write('{}\n'.format(line))
-
-        # close file objects
-        question_tok_fp.close()
-        answer_tok_fp.close()
-        question_vec_fp.close()
-        answer_vec_fp.close()
-
-    def save_full_model_state(self):
-        print('[INFO]: writing full model state files...')
-        
-        # save model
-        torch.save(self.state_dict(), '{}{}_params.pt'.format(
-            self.config['output_directory'], self.config['model_name']))
-
-        # path to vocab file
-        vocab_file = '{}{}_vocab.txt'.format(
-            self.config['output_directory'], self.config['model_name'])
-
-        # save vocab
-        with open(vocab_file, 'w') as fp:
-            for word, index in dict(self.config['vocab'].stoi).items():
-                fp.write('{},{}\n'.format(word, index))
-
-        # path to word vector file
-        wordvec_file = '{}{}_wordvecs.txt'.format(
-            self.config['output_directory'], self.config['model_name'])
-
-        # save wordvecs
-        with open(wordvec_file, 'w') as fp:
-            for i, wordvec in enumerate(self.embedding.weight):
-                word = self.config['vocab'].itos[i]
-                wordvec_str = ' '.join([
-                    str(n) for n in wordvec.detach().cpu().numpy()])
-                fp.write('{} {}\n'.format(word, wordvec_str))

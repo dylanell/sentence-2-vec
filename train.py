@@ -3,6 +3,7 @@ Script to train sentence2vec model.
 """
 
 import yaml
+import torch
 
 from util.pytorch_utils import build_processed_qa_dataloaders
 from model.sentence_2_vec_triplet import Sentence2VecTriplet
@@ -24,7 +25,6 @@ def main():
         cache_dir=config['output_directory'])
 
     # store vocab and wordvecs in config for model
-    config['vocab'] = vocab
     config['wordvecs'] = wordvecs
 
     # initialize model
@@ -35,13 +35,8 @@ def main():
         model.train_epochs(train_iter)
 
     # write trained word vectors to file
-    model.save_full_model_state()
-
-    # save learned sentence vectors for validation split
-    model.generate_sentence_embeddings(val_iter, 'val')
-
-    # save learned sentence vectors for training split
-    model.generate_sentence_embeddings(train_iter, 'train')
+    torch.save(model, '{}{}_model.pt'.format(
+        config['output_directory'], config['model_name']))
 
 
 if __name__ == '__main__':

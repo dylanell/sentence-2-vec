@@ -82,3 +82,15 @@ def build_processed_qa_dataloaders(
             size=(len(vocab), wordvec_dim))
 
     return train_iter, val_iter, vocab, wordvecs
+
+class CosineDistance(torch.nn.Module):
+    """
+    Computes batch-wise cosine distance between two batches of row vectors.
+    :param x1: batch of row vectors.
+    :param x2: batch of row vectors.
+    """
+    def __init__(self):
+        super(CosineDistance, self).__init__()
+
+    def forward(self, x1, x2):
+        return 1.0 - torch.nn.functional.cosine_similarity(x1, x2, dim=1)
