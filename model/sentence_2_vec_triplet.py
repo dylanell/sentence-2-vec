@@ -179,3 +179,7 @@ class Sentence2VecTriplet(torch.nn.Module):
             template = '[INFO]: Epoch {}, Epoch Time {:.2f}s, ' \
                        'Train Loss: {:.4f}'
             print(template.format(e + 1, epoch_time, avg_epoch_loss))
+
+            # save checkpoint
+            torch.save(self.state_dict(), '{}{}_model.pt'.format(
+                self.config['output_directory'], self.config['model_name']))

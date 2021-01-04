@@ -41,8 +41,8 @@ def main():
     if len(list(model.parameters())) > 0:
         model.train_epochs(train_iter)
 
-    # write trained word vectors to file
-    torch.save(model, '{}{}_model.pt'.format(
+    # save final model checkpoint
+    torch.save(model.state_dict(), '{}{}_state.pt'.format(
         config['output_directory'], config['model_name']))
 
 
