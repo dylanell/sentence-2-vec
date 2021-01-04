@@ -8,8 +8,7 @@ import random
 
 
 def build_processed_qa_dataloaders(
-        data_file, split=0.7, batch_size=32, random_seed=42,
-        wordvec_file=None, wordvec_dim=300, cache_dir='/tmp/'):
+        data_file, split=0.7, batch_size=32, random_seed=42):
     """
     Builds a training and validation dataloader for QA pairs pre-processed
     text data ready to be tokenized by whitespace.
@@ -44,15 +43,7 @@ def build_processed_qa_dataloaders(
     # split (used for both questions and answers)
     # NOTE: this is REQUIRED before creating an iterator since an iterator uses
     # the vocab object to create vectors of word indices
-    if wordvec_file is not None:
-        # build vocab from pretrained word vectors
-        texts_field.build_vocab(
-            train_ds,
-            vectors=torchtext.vocab.Vectors(wordvec_file, cache_dir),
-            vectors_cache=cache_dir)
-    else:
-        # build custom vocab from training data
-        texts_field.build_vocab(train_ds)
+    texts_field.build_vocab(train_ds)
 
     # construct training dataset iterator
     train_iter = torchtext.data.Iterator(
@@ -71,17 +62,7 @@ def build_processed_qa_dataloaders(
     # get vocab
     vocab = texts_field.vocab
 
-    # add wordvecs to config data
-    if wordvec_file is not None:
-        # wordvecs loaded from wordvec file
-        wordvecs = texts_field.vocab.vectors
-    else:
-        # wordvecs constructed from train_ds vocab and normal distribution
-        wordvecs = torch.normal(
-            mean=0, std=1,
-            size=(len(vocab), wordvec_dim))
-
-    return train_iter, val_iter, vocab, wordvecs
+    return train_iter, val_iter, vocab
 
 class CosineDistance(torch.nn.Module):
     """

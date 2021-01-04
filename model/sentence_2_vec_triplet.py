@@ -18,8 +18,8 @@ class Sentence2VecTriplet(torch.nn.Module):
         print('[INFO]: using {} device'.format(self.device))
 
         # construct embedding layer
-        self.embedding = torch.nn.Embedding.from_pretrained(
-            config['wordvecs'], freeze=config['freeze_wordvecs'])
+        self.embedding = torch.nn.Embedding(
+            config['vocab_len'], config['wordvec_dim'])
 
         # compute self attention on word embeddings with transformer encoder
         self.transformer_layers = torch.nn.ModuleList([

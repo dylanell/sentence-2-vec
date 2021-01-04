@@ -18,11 +18,8 @@ def main():
     data_file = '{}qa_pairs_processed.csv'.format(config['dataset_directory'])
 
     # build data iterators and vocabulary object
-    train_iter, val_iter, vocab, wordvecs = build_processed_qa_dataloaders(
-        data_file, batch_size=config['batch_size'],
-        wordvec_file=config['wordvec_file'],
-        wordvec_dim=config['wordvec_dim'],
-        cache_dir=config['output_directory'])
+    train_iter, val_iter, vocab = build_processed_qa_dataloaders(
+        data_file, batch_size=config['batch_size'])
 
     # save vocab
     vocab_file = '{}{}_vocab.txt'.format(
@@ -31,8 +28,8 @@ def main():
         for word, index in dict(vocab.stoi).items():
             fp.write('{},{}\n'.format(word, index))
 
-    # store wordvecs in config for model
-    config['wordvecs'] = wordvecs
+    # add vocab info to config
+    config['vocab_len'] = len(vocab)
 
     # initialize model
     model = Sentence2VecTriplet(config)
@@ -42,7 +39,7 @@ def main():
         model.train_epochs(train_iter)
 
     # save final model checkpoint
-    torch.save(model.state_dict(), '{}{}_state.pt'.format(
+    torch.save(model.state_dict(), '{}{}_model.pt'.format(
         config['output_directory'], config['model_name']))
 
 
