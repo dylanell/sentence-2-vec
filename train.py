@@ -26,7 +26,7 @@ def main():
         config['output_directory'], config['model_name'])
     with open(vocab_file, 'w') as fp:
         for word, index in dict(vocab.stoi).items():
-            fp.write('{},{}\n'.format(word, index))
+            fp.write('{} {}\n'.format(word, index))
 
     # add vocab info to config
     config['vocab_len'] = len(vocab)
