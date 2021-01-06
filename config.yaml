@@ -1,7 +1,8 @@
 dataset_directory: '/home/dylan/datasets/answers/diabetes/'
 output_directory: '/home/dylan/trained_model_files/sentence2vec/'
-wordvec_dim: 300
 model_name: 'test'
+wordvec_dim: 300
+output_dim: 32
 number_epochs: 100
 batch_size: 64
 learning_rate: 0.0001
@@ -9,7 +10,7 @@ weight_decay: 0.01
 number_workers: 4
 number_transformers: 2
 number_attention_heads: 10
-transformer_activation: 'tanh'
+activation: 'tanh'
 distance_metric: 'l1'
 loss: 'margin'
 margin: 0.5

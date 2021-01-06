@@ -29,20 +29,24 @@ class Sentence2VecTriplet(torch.nn.Module):
                 activation='relu', dropout=0.0)
             for n in range(config['number_transformers'])])
 
+        # linear layer to produce output dimension
+        self.linear_layer = torch.nn.Linear(
+            config['wordvec_dim'], config['output_dim'])
+
         # initialize transformer activation function
-        if config['transformer_activation'] == 'relu':
-            self.transformer_act_fn = torch.nn.ReLU()
-        elif config['transformer_activation'] == 'leaky_relu':
-            self.transformer_act_fn = torch.nn.LeakyReLU()
-        elif config['transformer_activation'] == 'tanh':
-            self.transformer_act_fn = torch.nn.Tanh()
-        elif config['transformer_activation'] == 'sigmoid':
-            self.transformer_act_fn = torch.nn.Sigmoid()
-        elif config['transformer_activation'] == 'identity':
-            self.transformer_act_fn = torch.nn.Identity()
+        if config['activation'] == 'relu':
+            self.act_fn = torch.nn.ReLU()
+        elif config['activation'] == 'leaky_relu':
+            self.act_fn = torch.nn.LeakyReLU()
+        elif config['activation'] == 'tanh':
+            self.act_fn = torch.nn.Tanh()
+        elif config['activation'] == 'sigmoid':
+            self.act_fn = torch.nn.Sigmoid()
+        elif config['activation'] == 'identity':
+            self.act_fn = torch.nn.Identity()
         else:
             print('[INFO]: unsupported activation \'{}\''.format(
-                config['transformer_activation']))
+                config['activation']))
             exit()
 
         # initialize distance function
@@ -68,10 +72,13 @@ class Sentence2VecTriplet(torch.nn.Module):
 
         # feed embeddings to multiple ocnsecutive transformers
         for transformer in self.transformer_layers:
-            z = self.transformer_act_fn(transformer(z))
+            z = self.act_fn(transformer(z))
 
         # sum word vectors along sentence length dimension
         z = torch.sum(z, dim=0)
+
+        # feed pooled transformer outputs to final linear layer with activation
+        z = self.act_fn(self.linear_layer(z))
 
         # anormalize outputs
         z = torch.nn.functional.normalize(z, dim=1)
