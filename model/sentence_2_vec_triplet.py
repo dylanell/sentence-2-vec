@@ -12,7 +12,8 @@ class Sentence2VecTriplet(torch.nn.Module):
         super(Sentence2VecTriplet, self).__init__()
         # try to get a gpu otherwise use cpu
         self.device = torch.device(
-            'cuda:0' if torch.cuda.is_available() else 'cpu')
+            'cuda:0' if config['acceleration'] and
+            torch.cuda.is_available() else 'cpu')
         print('[INFO]: using {} device'.format(self.device))
 
         # construct embedding layer
