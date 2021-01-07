@@ -6,8 +6,6 @@ import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-import util.pytorch_utils as pu
-
 
 class Sentence2VecTriplet(torch.nn.Module):
     def __init__(self, config):
@@ -55,7 +53,7 @@ class Sentence2VecTriplet(torch.nn.Module):
         elif config['distance_metric'] == 'l1':
             self.distance_metric_fn = torch.nn.PairwiseDistance(p=1.0)
         elif config['distance_metric'] == 'cosine':
-            self.distance_metric_fn = pu.CosineDistance()
+            self.distance_metric_fn = CosineDistance()
         else:
             print('[INFO]: unsupported metric \'{}\''.format(
                 config['distance_metric']))
@@ -190,3 +188,16 @@ class Sentence2VecTriplet(torch.nn.Module):
             # save checkpoint
             torch.save(self.state_dict(), '{}{}_model.pt'.format(
                 self.config['output_directory'], self.config['model_name']))
+
+
+class CosineDistance(torch.nn.Module):
+    """
+    Computes batch-wise cosine distance between two batches of row vectors.
+    :param x1: batch of row vectors.
+    :param x2: batch of row vectors.
+    """
+    def __init__(self):
+        super(CosineDistance, self).__init__()
+
+    def forward(self, x1, x2):
+        return 1.0 - torch.nn.functional.cosine_similarity(x1, x2, dim=1)
