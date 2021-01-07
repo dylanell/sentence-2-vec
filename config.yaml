@@ -1,6 +1,6 @@
 dataset_directory: '/home/dylan/datasets/answers/diabetes/'
 output_directory: '/home/dylan/trained_model_files/sentence2vec/'
-model_name: 'test'
+model_name: 'I300_R_T4_O32'
 acceleration: True
 wordvec_dim: 300
 output_dim: 32
@@ -14,4 +14,4 @@ number_attention_heads: 10
 activation: 'tanh'
 distance_metric: 'l1'
 loss: 'ratio'
-margin: 0.5
+margin: 0.2
