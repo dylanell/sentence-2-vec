@@ -58,11 +58,25 @@ $ python train.py
 This project is accompanied by a Jupyter notebook that explores the learned
 sentence representations by performing data visualizations and cluster
 analysis. If Github fails to render the notebook itself, you can also view it
-by pasting the [notebook URL](https://github.com/dylanell/sentence-2-vec/blob/main/notebook.ipynb) into https://nbviewer.jupyter.org/. The following
+by pasting the [notebook URL](https://github.com/dylanell/sentence-2-vec/blob/main/notebook.ipynb) into https://nbviewer.jupyter.org/. Use the following
 command to start the Jupyter notebook server in your browser:
 
 ```
 $ jupyter-notebook notebook.ipynb
+```
+
+### Serving a Trained Model:
+
+This project also includes a Python script to deploy a trained model serving API for inference on user queries. Model serving is performed by computing the sentence vector for a user input query and assigning this vector to its closest representative cluster vector from clusters computed running the Jupyter notebook above. Therefore, you must first run the notebook above to explore satisfactory clustering results for your trained model, which produces a `clusters.csv` file containing representative vectors and top-5 word summaries for each discovered cluster. The model serving script pulls variables from the same configuration file as the training script, therefore it will search for a trained model file corresponding to `model_name` located within the `output_directory`. Serve a trained model by running the command:
+
+```
+$ python serve.py
+```
+
+The above script will provide a local API endpoint in which novel queries can be sent to be categorized using the following request structure:
+
+```
+TODO: finish API endpoint
 ```
 
 ### References:
