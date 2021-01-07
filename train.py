@@ -18,7 +18,7 @@ def main():
     data_file = '{}qa_pairs_processed.csv'.format(config['dataset_directory'])
 
     # build data iterators and vocabulary object
-    train_iter, val_iter, vocab = build_processed_qa_dataloaders(
+    data_iter, vocab = build_processed_qa_dataloaders(
         data_file, batch_size=config['batch_size'])
 
     # save vocab
@@ -36,7 +36,7 @@ def main():
 
     # train model if we have trainable parameters
     if len(list(model.parameters())) > 0:
-        model.train_epochs(train_iter)
+        model.train_epochs(data_iter)
 
     # save final model checkpoint
     torch.save(model.state_dict(), '{}{}_model.pt'.format(

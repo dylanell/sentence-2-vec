@@ -83,7 +83,7 @@ class Sentence2VecTriplet(torch.nn.Module):
 
         return z
 
-    def train_epochs(self, train_iter):
+    def train_epochs(self, data_iter):
         # initialize optimizer
         optimizer = torch.optim.Adam(
             self.parameters(), lr=self.config['learning_rate'],
@@ -102,7 +102,7 @@ class Sentence2VecTriplet(torch.nn.Module):
             # reset loss accumulator
             epoch_loss = 0.
 
-            for i, data in enumerate(train_iter):
+            for i, data in enumerate(data_iter):
                 # parse batch
                 question_batch = data.question.to(self.device)
                 answer_batch = data.answer.to(self.device)
