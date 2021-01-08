@@ -130,3 +130,4 @@ curl -X POST http://localhost:5000/api/v1/predict -H 'Content-Type: application/
 18. [Embedding Text in Hyperbolic Spaces](https://arxiv.org/pdf/1806.04313.pdf)
 19. [Skip-Thought Vectors](https://arxiv.org/pdf/1506.06726.pdf)
 20. [How to use Pre-trained Word Embeddings in PyTorch](https://medium.com/@martinpella/how-to-use-pre-trained-word-embeddings-in-pytorch-71ca59249f76)
+21. [Serve Your Machine Learning Models With A Simple Python Server](https://towardsdatascience.com/serve-your-machine-learning-models-with-a-simple-python-server-5a72d005e0ae)
