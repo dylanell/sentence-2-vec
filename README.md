@@ -44,7 +44,7 @@ separate words and separated by a 'space' character prior to generating the
  ### Training:
 
 Training options and hyperparameters are pulled from the `config.yaml` file and
-can be changed by editing the file contents. The training script will write a vocabulary file, a model parameters file, and `tensorboard` summary writer files to the output directory. All `tensorboard` summary files will be located within a `runs` directory. Train a model by running the command: 
+can be changed by editing the file contents. The training script will write a vocabulary file, a model parameters file, and `tensorboard` summary writer files to the output directory. All `tensorboard` summary files will be located within a `runs` directory. Train a model by running the command:
 
 ```
 $ python train.py
@@ -70,10 +70,42 @@ This project also includes a Python script to deploy a trained model serving API
 $ python serve.py
 ```
 
-The above script will provide a local API endpoint in which novel queries can be sent to be categorized using the following request structure:
+The above script will start a local API endpoint at `http://localhost:5000/api/v1/predict/` in which user queries can be posted with the format `{"query": "<query text string"}`. Below are a few examples of some user queries (within the trained scope of the Diabetes topic on answers.com) and their corresponding API post requests/responses using `curl` via the command line.
+
+**Queries:**
+
+"What are the symptoms of diabetes?"
+
+"How is blood sugar controlled in the body"
+
+"Is there a cure for diabetes?"
+
+**API Request Posts:**
 
 ```
-TODO: finish API endpoint
+curl -X POST http://localhost:5000/api/v1/predict -H 'Content-Type: application/json' -d '{"query": "What are the symptoms of type 2 diabetes?"}'
+```
+
+```
+curl -X POST http://localhost:5000/api/v1/predict -H 'Content-Type: application/json' -d '{"query": "How is blood sugar controlled in the body"}'
+```
+
+```
+curl -X POST http://localhost:5000/api/v1/predict -H 'Content-Type: application/json' -d '{"query": "Is there a cure for diabetes?"}'
+```
+
+**Example Responses:**
+
+```
+{"query_topic": "symptom type one common"}
+```
+
+```
+{"query_topic": "level bodi hormon sugar insulin"}
+```
+
+```
+{"query_topic": "cure exercis diet revers help"}
 ```
 
 ### References:
