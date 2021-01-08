@@ -44,10 +44,7 @@ separate words and separated by a 'space' character prior to generating the
  ### Training:
 
 Training options and hyperparameters are pulled from the `config.yaml` file and
-can be changed by editing the file contents. The `train.py` script accepts only
-several specific values for the `model_type` variable in `config.yaml`
-corresponding to the type of NLP model you would like to train. Train a model
-by running the command:
+can be changed by editing the file contents. The training script will write a vocabulary file, a model parameters file, and `tensorboard` summary writer files to the output directory. All `tensorboard` summary files will be located within a `runs` directory. Train a model by running the command: 
 
 ```
 $ python train.py
