@@ -70,7 +70,7 @@ This project also includes a Python script to deploy a trained model serving API
 $ python serve.py
 ```
 
-The above script will start a local API endpoint at `http://localhost:5000/api/v1/predict/` in which user queries can be posted with the format `{"query": "<query text string"}`. Below are a few examples of some user queries (within the trained scope of the Diabetes topic on answers.com) and their corresponding API post requests/responses using `curl` via the command line.
+The above script will provide a local API endpoint at `http://localhost:5000/api/v1/predict/` in which user queries can be posted with the format `{"query": "<query text string"}`. Below are a few examples of some user queries (within the trained scope of the Diabetes topic on answers.com) and their corresponding API post requests/responses using `curl` via the command line.
 
 **Queries:**
 
