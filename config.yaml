@@ -1,7 +1,7 @@
 dataset_directory: '/home/dylan/datasets/answers/diabetes/'
 output_directory: '/home/dylan/trained_model_files/sentence2vec/'
 model_name: 'I300_R_T4_O32'
-acceleration: True
+acceleration: False
 wordvec_dim: 300
 output_dim: 32
 number_epochs: 500
