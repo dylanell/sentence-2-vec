@@ -1,1 +1,2 @@
-db_path: /home/dylan/datasets/answers/answers.db
+write_path: /home/dylan/datasets/answers
+topic: diabetes

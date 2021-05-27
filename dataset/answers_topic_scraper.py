@@ -3,7 +3,7 @@ SQLite DB helper class.
 """
 
 
-import yaml
+import gensim
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
@@ -12,17 +12,19 @@ from dataset.text_utils import test_qa_is_good, process_text
 
 
 class AnswersTopicScraper():
-    def __init__(self, db_path: str):
+    def __init__(self, write_path: str):
         """Initialize an Answers.com topic scraper to collect question-anwser 
         pairs, process the data, and write it to a sqlite database topic table.
 
         Args:
-            conf: path to .scraper_conf.yml configuration file.
+            write_path: path to write output files.
 
         """
 
-        self._db = sqlite3.connect(db_path)
+        self._write_path = write_path
+        self._db = sqlite3.connect(f'{self._write_path}/answers.db')
         self._cur = self._db.cursor()
+        self._vocab = gensim.corpora.Dictionary()
 
     def close(self):
         self._cur.close()
@@ -81,7 +83,7 @@ class AnswersTopicScraper():
                     q_block = block.find('h1', {'property': 'name'})
                     a_block = block.find('div', {'property': 'content'})
 
-                    # if good question and answer, add data to db
+                    # if good data, add data to db and update vocabulary
                     if test_qa_is_good(q_block, a_block):
                         url = block.find('a')['href']
                         question = q_block.text
@@ -99,6 +101,9 @@ class AnswersTopicScraper():
                         except sqlite3.IntegrityError:
                             pass
 
+                        self._vocab.add_documents((
+                            proc_question.split(), proc_answer.split()))
+
                         num_samples += 1
 
                 page_num += 1
@@ -108,3 +113,7 @@ class AnswersTopicScraper():
                 break
 
         self._db.commit()
+
+        print(self._vocab)
+
+        self._vocab.save(f'{self._write_path}/{topic}.vocab')

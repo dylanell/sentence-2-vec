@@ -12,9 +12,9 @@ def main():
     with open('.dataset_conf.yml', 'r') as fp:
         config = yaml.load(fp, Loader=yaml.FullLoader)
     
-    scraper = AnswersTopicScraper(config['db_path'])
+    scraper = AnswersTopicScraper(config['write_path'])
 
-    scraper.scrape('fashion', 30000)
+    scraper.scrape(config['topic'], 30000)
 
     scraper.close()
 

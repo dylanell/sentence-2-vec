@@ -3,16 +3,13 @@ General text processing utilities.
 """
 
 import nltk
+from nltk.corpus import stopwords
 import unidecode
 import re
 import inflect
 
 # initialize inflect library engine
 inflect_engine = inflect.engine()
-
-
-# NOTE: uncomment to initialize nltk word stemmer
-# stemmer = nltk.stem.PorterStemmer()
 
 # NOTE: uncomment below for punctuation filtering
 # import string
@@ -106,8 +103,15 @@ def process_text(text):
     tokens = flatten_list(list(map(
         lambda x: process_alnumeric(x) if is_number(x) else x, tokens)))
 
+    # remove non alpha-numeric
+    tokens = [x for x in tokens if x.isalpha()]
+
+    # remove stopwords
+    tokens = [x for x in tokens if x not in stopwords.words('english')]
+
     # stem word tokens
-    # stemmed_tokens = list(map(lambda x: stemmer.stem(x), tokens))
+    stemmer = nltk.stem.PorterStemmer()
+    tokens = list(map(lambda x: stemmer.stem(x), tokens))
 
     # re-join tokens
     joined_tokens = ' '.join(tokens)
