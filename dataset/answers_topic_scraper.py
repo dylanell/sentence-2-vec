@@ -26,6 +26,9 @@ class AnswersTopicScraper():
         self._cur = self._db.cursor()
         self._vocab = gensim.corpora.Dictionary()
 
+        # add <UNK> token at index 0 for unknown word default
+        self._vocab.add_documents([['<PAD>', '<UNK>']])
+
     def close(self):
         self._cur.close()
         self._db.close()
@@ -113,7 +116,5 @@ class AnswersTopicScraper():
                 break
 
         self._db.commit()
-
-        print(self._vocab)
 
         self._vocab.save(f'{self._write_path}/{topic}.vocab')
