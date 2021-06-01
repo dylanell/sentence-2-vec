@@ -8,7 +8,7 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 
-from dataset.text_utils import test_qa_is_good, process_text
+from scrapers.utils.text_utils import test_qa_is_good, process_text
 
 
 class AnswersTopicScraper():
@@ -26,7 +26,7 @@ class AnswersTopicScraper():
         self._cur = self._db.cursor()
         self._vocab = gensim.corpora.Dictionary()
 
-        # add <UNK> token at index 0 for unknown word default
+        # add <PAD> and <UNK> special tokens at index 0 and 1
         self._vocab.add_documents([['<PAD>', '<UNK>']])
 
     def close(self):

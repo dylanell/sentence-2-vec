@@ -1,6 +1,15 @@
 PYTHON = python3
 
-.PHONY: 
+.PHONY:
+
+setup:
+	pip install -r requirements.txt
+
+data:
+	${PYTHON} scrape.py
+
+train:
+	${PYTHON} train.py
 
 #test:
 #	${PYTHON} -m pytest -v

@@ -1,0 +1,7 @@
+database_file: /home/dylan/datasets/answers/answers.db
+database_table: diabetes
+vocab_file: /home/dylan/datasets/answers/diabetes.vocab
+num_epochs: 500
+wordvec_dim: 64
+sentvec_dim: 32
+batch_size: 128

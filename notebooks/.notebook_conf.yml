@@ -1,3 +1,0 @@
-database_file: /home/dylan/datasets/answers/answers.db
-database_table: diabetes
-vocab_file: /home/dylan/datasets/answers/diabetes.vocab

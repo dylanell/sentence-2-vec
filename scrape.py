@@ -3,16 +3,13 @@ Construct a dataset of question-answer pairs on a singular topic from answers.co
 """
 
 
-import sys
-sys.path.append('..')
-
 import yaml
 
-from dataset.answers_topic_scraper import AnswersTopicScraper
+from scrapers.answers_topic_scraper import AnswersTopicScraper
 
 
 def main():
-    with open('dataset_conf.yml', 'r') as fp:
+    with open('config/scrape_conf.yml', 'r') as fp:
         config = yaml.load(fp, Loader=yaml.FullLoader)
     
     scraper = AnswersTopicScraper(config['write_path'])

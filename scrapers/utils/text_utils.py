@@ -121,13 +121,11 @@ def process_text(text):
 def test_qa_is_good(q, a):
     # reject if question or answer is None
     if (q is None) or (a is None):
-        # print('[INFO]: qa rejected (None value)')
         return False
 
     # reject if answer contains a link
     link_flags = ['http', 'https', 'www', '.net', '.com', '.org', '.gov']
     if any(flag in a.text for flag in link_flags):
-        # print('[INFO]: qa rejected (link flagged)')
         return False
 
     # if we got here qa pair is all good
