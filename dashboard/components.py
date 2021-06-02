@@ -25,13 +25,12 @@ def header():
 
 def input_form(style=None):
     if style is None:
-        style = {
+        style = style={
             "vertical-align": "top",
-            "text-align": "center",
-            "display": "inline-block",
+            "justify-content": "center",
             "padding": "10px",
             "margin": "10px",
-            "width": "100%",
+            "width": "93%",
             "height": "100%",
             "border": "2px solid",
             "border-radius": "5px",
@@ -62,11 +61,10 @@ def projected_manifold_plot(figure, style=None):
     if style is None:
         style = {
             "vertical-align": "top",
-            "text-align": "center",
-            "display": "inline-block",
+            "justify-content": "center",
             "padding": "10px",
             "margin": "10px",
-            "width": "100%",
+            "width": "93%",
             "height": "100%",
             "border": "2px solid",
             "border-radius": "5px",
@@ -104,11 +102,10 @@ def summary_section(style=None):
     if style is None:
         style = {
             "vertical-align": "top",
-            "text-align": "center",
-            "display": "inline-block",
+            "justify-content": "center",
             "padding": "10px",
             "margin": "10px",
-            "width": "100%",
+            "width": "93%",
             "height": "100%",
             "border": "2px solid",
             "border-radius": "5px",

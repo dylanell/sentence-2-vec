@@ -100,42 +100,52 @@ def main():
         header(),
         html.Div(
             children=[
-                input_form(
+                html.Div(
+                    children=[
+                        input_form(
+                            style={
+                                "vertical-align": "top",
+                                "justify-content": "center",
+                                "padding": "10px",
+                                "margin": "10px",
+                                "width": "93%",
+                                "height": "100%",
+                                "border": "2px solid",
+                                "border-radius": "5px",
+                                "border-color": "#d4d6d6",
+                                "background-color": "#d4d6d6"
+                            }
+                        ),
+                        summary_section(
+                            style={
+                                "justify-content": "center",
+                                "padding": "10px",
+                                "margin": "10px",
+                                "width": "93%",
+                                "height": "100%",
+                                "border": "2px solid",
+                                "border-radius": "5px",
+                                "border-color": "#d4d6d6",
+                                "background-color": "#d4d6d6"
+                            }
+                        )
+                    ],
                     style={
                         "vertical-align": "top",
-                        "text-align": "center",
-                        "padding": "10px",
-                        "margin": "10px",
-                        "width": "25%",
-                        "height": "25%",
-                        "border": "2px solid",
-                        "border-radius": "5px",
-                        "border-color": "#d4d6d6",
-                        "background-color": "#d4d6d6"
-                    }),
-                summary_section(
-                    style={
-                        "text-align": "center",
-                        "padding": "10px",
-                        "margin": "10px",
-                        "width": "25%",
-                        "height": "25%",
-                        "border": "2px solid",
-                        "border-radius": "5px",
-                        "border-color": "#d4d6d6",
-                        "background-color": "#d4d6d6"
+                        "display": "inline-block",
+                        "width": "35%"
                     }
                 ),
                 projected_manifold_plot(
                     fig,
                     style={
-                        "vertical-align": "top",
                         "display": "inline-block",
-                        "text-align": "center",
+                        "vertical-align": "top",
+                        "justify-content": "center",
                         "padding": "10px",
                         "margin": "10px",
-                        "width": "50%",
-                        "height": "50%",
+                        "width": "55%",
+                        "height": "100%",
                         "border": "2px solid",
                         "border-radius": "5px",
                         "border-color": "#d4d6d6",
