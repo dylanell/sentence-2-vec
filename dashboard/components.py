@@ -10,8 +10,8 @@ import dash_core_components as dcc
 
 
 def header():
-    return dcc.Markdown(
-        children=["# Sentence-to-Vector Model"],
+    return html.H1(
+        children=[html.B("Sentence-to-Vector Model")],
         id="header",
         style={
             "display": "inline-block",
@@ -23,10 +23,24 @@ def header():
     )
 
 
-def input_form(width="100%", height="100%"):
+def input_form(style=None):
+    if style is None:
+        style = {
+            "vertical-align": "top",
+            "text-align": "center",
+            "display": "inline-block",
+            "padding": "10px",
+            "margin": "10px",
+            "width": "100%",
+            "height": "100%",
+            "border": "2px solid",
+            "border-radius": "5px",
+            "border-color": "#d4d6d6",
+            "background-color": "#d4d6d6"
+        }
+    
     return html.Div(
         children=[
-            #dcc.Markdown("##### Submit Input"),
             dcc.Input(
                 placeholder="Ask a question about diabetes...", 
                 id="input_form_input", 
@@ -35,42 +49,43 @@ def input_form(width="100%", height="100%"):
             html.Button(
                 children=["Submit"], 
                 id="input_form_button",
-                style={"width": "30%"}
-            ),
-            html.Div(
-                children=[],
-                id="input_form_output",
-                style={"visibility": "hidden"}
+                style={"width": "30%"},
+                n_clicks=0
             )
         ],
         id="input_form",
-        style={
-            "display": "inline-block",
-            "text-align": "center",
-            "padding": "10px",
-            "margin": "10px",
-            "width": width,
-            "height": height,
-            #"border": "2px solid",
-            #"border-radius": "5px"
-        }
+        style=style
     )
 
 
-def projected_manifold_plot(
-        figure, width="100%", height="100%", color="#ccebff"):
+def projected_manifold_plot(figure, style=None):
+    if style is None:
+        style = {
+            "vertical-align": "top",
+            "text-align": "center",
+            "display": "inline-block",
+            "padding": "10px",
+            "margin": "10px",
+            "width": "100%",
+            "height": "100%",
+            "border": "2px solid",
+            "border-radius": "5px",
+            "border-color": "#d4d6d6",
+            "background-color": "#d4d6d6"
+        }
+    
     # override figure layout properties
     figure.update_layout(
         height=600,
         showlegend=False
     )
 
-    figure.layout.plot_bgcolor = color
-    figure.layout.paper_bgcolor = color
+    figure.layout.plot_bgcolor = style["background-color"]
+    figure.layout.paper_bgcolor = style["background-color"]
 
     return html.Div(
         children=[
-            dcc.Markdown("##### Projected Question Vector Manifold"),
+            html.H5(html.B("Projected Question-Vector Manifold")),
             dcc.Graph(
                 figure=figure, 
                 style={
@@ -81,39 +96,41 @@ def projected_manifold_plot(
             )
         ],
         id="projected_manifold_plot",
-        style={
-            "display": "inline-block",
-            "text-align": "center",
-            "padding": "10px",
-            "margin": "10px",
-            "width": width,
-            "height": height,
-            "border": "2px solid",
-            "border-radius": "5px",
-            "border-color": color,
-            "background-color": color
-        }
+        style=style
     )
 
 
-def summary_section(width="100%", height="100%"):
-    return html.Div(
-        children=[
-            dcc.Markdown(
-                children=[f"""
-                    ##### Input Summary
-                """]
-            )
-        ],
-        id="summary_section",
-        style={
-            "display": "inline-block",
+def summary_section(style=None):
+    if style is None:
+        style = {
+            "vertical-align": "top",
             "text-align": "center",
+            "display": "inline-block",
             "padding": "10px",
             "margin": "10px",
-            "width": width,
-            "height": height,
-            #"border": "2px solid",
-            #"border-radius": "5px"
+            "width": "100%",
+            "height": "100%",
+            "border": "2px solid",
+            "border-radius": "5px",
+            "border-color": "#d4d6d6",
+            "background-color": "#d4d6d6"
         }
+    
+    return html.Div(
+        children=[
+            html.H5(html.B("Input Summary")),
+            html.Div(html.B("Raw Input:"), style={"text-align": "left"}),
+            html.Div(id="raw_input", style={"text-align": "left"}),
+            html.Div(
+                html.B("Processed Input:"), style={"text-align": "left"}),
+            html.Div(id="processed_input", style={"text-align": "left"}),
+            html.Div(
+                html.B("Five Nearest Neighbors:"), style={"text-align": "left"}),
+            html.Div(id="nearest_neighbors", style={"text-align": "left"}),
+            html.Div(
+                html.B("Nearest Cluster:"), style={"text-align": "left"}),
+            html.Div(id="nearest_cluster", style={"text-align": "left"})
+        ],
+        id="summary_section",
+        style=style
     )
