@@ -11,7 +11,7 @@ from trainers.triplet_trainer import TripletTrainer
 
 
 def main():
-    with open('config/train_conf.yml', 'r') as fp:
+    with open('config/train_cfg.yml', 'r') as fp:
         config = yaml.load(fp, Loader=yaml.FullLoader)
     
     dataset = QATripletDataset(

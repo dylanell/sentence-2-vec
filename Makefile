@@ -11,8 +11,8 @@ data:
 train:
 	${PYTHON} train.py
 
+app:
+	${PYTHON} app.py
+
 #test:
 #	${PYTHON} -m pytest -v
-
-#dashboard:
-#	${PYTHON} deploy/dashboard.py

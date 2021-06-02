@@ -9,7 +9,7 @@ from scrapers.answers_topic_scraper import AnswersTopicScraper
 
 
 def main():
-    with open('config/scrape_conf.yml', 'r') as fp:
+    with open('config/scrape_cfg.yml', 'r') as fp:
         config = yaml.load(fp, Loader=yaml.FullLoader)
     
     scraper = AnswersTopicScraper(config['write_path'])
