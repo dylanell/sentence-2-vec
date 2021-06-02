@@ -96,6 +96,11 @@ class QATripletDataset(Dataset):
     def get_vocab(self):
         return self._vocab
 
+    def str_to_idx_tensor(self, string: str):
+        return [
+            torch.LongTensor(self._vocab.doc2idx(
+            string.split(), unknown_word_index=self._pad_idx))]
+
     def close(self):
         self._cur.close()
         self._db.close()
