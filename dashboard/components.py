@@ -11,7 +11,7 @@ import dash_core_components as dcc
 
 def header():
     return html.H1(
-        children=[html.B("Sentence-to-Vector Model")],
+        children=[html.B("Sentence2Vec Model")],
         id="header",
         style={
             "display": "inline-block",
@@ -85,7 +85,8 @@ def projected_manifold_plot(figure, style=None):
         children=[
             html.H5(html.B("Projected Question-Vector Manifold")),
             dcc.Graph(
-                figure=figure, 
+                figure=figure,
+                id="manifold_plot",
                 style={
                     "width": "100%", 
                     "height": "100%",

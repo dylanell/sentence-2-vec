@@ -3,6 +3,7 @@ Sentence-to-Vec Dash app for model serving and visualization.
 """
 
 
+from sklearn import cluster
 import yaml
 import torch
 import pandas as pd
@@ -11,6 +12,8 @@ import plotly.express as px
 from sklearn.cluster import DBSCAN, OPTICS
 from sklearn.manifold import TSNE
 from sklearn.neighbors import NearestNeighbors
+import nltk
+from nltk.corpus import stopwords
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
@@ -57,9 +60,9 @@ def main():
     question_enc_dict = {
         i: list(row) for i, row in enumerate(question_enc)}
 
+    # cluster vectors
     clustering = DBSCAN(eps=0.006, min_samples=10, n_jobs=-1, metric='cosine')
     labels = clustering.fit_predict(question_enc)
-
     # optics = OPTICS(min_samples=10, metric='cosine')
     # optics.fit(question_enc)
     # labels = optics.labels_
@@ -68,7 +71,9 @@ def main():
     perc_labeled = 100 * (len(labels[labels != -1]) / len(labels))
     print(f'[Num. Clusters]: {num_clusters}, [Perc. Non-Outliers]: {perc_labeled:.1f}')
 
-    tsne = TSNE(n_components=3, metric='cosine')
+    # project sentence vector manifold
+    tsne = TSNE(
+        n_components=3, metric='cosine', random_state=42)
     question_proj = tsne.fit_transform(question_enc)
 
     df = pd.DataFrame({
@@ -167,8 +172,11 @@ def main():
             }
         ),
         dcc.Store(
-            id="local_question_enc", data=question_enc_dict)
+            id="local_question_enc", 
+            data=question_enc_dict
+        )
     ])
+
 
     @app.callback(
         Output("raw_input", "children"),
@@ -204,20 +212,18 @@ def main():
             value_enc = encoder(
                 value_idx + [torch.LongTensor([0])])[0]
 
-            question_enc = np.concatenate(
+            question_enc_np = np.concatenate(
                 [np.expand_dims(np.array(vec), axis=0) \
                 for _, vec in question_enc.items()], axis=0)
 
             # append to question_enc array
-            question_enc = np.append(
-                question_enc, 
-                np.expand_dims(
-                    value_enc.detach().numpy(), axis=0), 
-                axis=0)
+            question_enc_np = np.append(
+                question_enc_np, np.expand_dims(
+                    value_enc.detach().numpy(), axis=0), axis=0)
 
             # compute nearest neighbors
-            nbrs = neigh.fit(question_enc)
-            _, nn_idx = nbrs.kneighbors(question_enc)
+            nbrs = neigh.fit(question_enc_np)
+            _, nn_idx = nbrs.kneighbors(question_enc_np)
 
             # get nearest neighbors on last sample
             neighbors = [question_str[i] for i in nn_idx[-1, 1:]]
@@ -231,7 +237,118 @@ def main():
             return neighbor_divs
 
 
-    app.run_server(debug=True)
+    @app.callback(
+        Output("nearest_cluster", "children"),
+        [Input("input_form_button", "n_clicks"),
+        State("input_form_input", "value"),
+        State("local_question_enc", "data")]
+    )
+    def update_nearest_cluster(n_clicks, value, question_enc):
+        if n_clicks > 0:
+            # encode user question to sentence representation
+            proc_value = process_text(value)
+            value_idx = dataset.str_to_idx_tensor(proc_value)
+            value_enc = encoder(
+                value_idx + [torch.LongTensor([0])])[0]
+
+            # convert question_enc dict back to numpy array
+            question_enc_np = np.concatenate(
+                [np.expand_dims(np.array(vec), axis=0) \
+                for _, vec in question_enc.items()], axis=0)
+
+            # append to question_enc array
+            question_enc_np = np.append(
+                question_enc_np, np.expand_dims(
+                    value_enc.detach().numpy(), axis=0), axis=0)
+            
+            # cluster vectors
+            clustering = DBSCAN(eps=0.006, min_samples=10, n_jobs=-1, metric='cosine')
+            labels = clustering.fit_predict(question_enc_np)
+            # optics = OPTICS(min_samples=10, metric='cosine')
+            # optics.fit(question_enc)
+            # labels = optics.labels_
+
+            df = pd.DataFrame({
+                'sentence': question_str + [proc_value],
+                'vector': [x for x in question_enc_np],
+                'label': labels
+            })
+
+            # get list standard stop words
+            stop_words = stopwords.words('english')
+
+            # initialize word stemmer
+            stemmer = nltk.stem.PorterStemmer()
+
+            # stem stop words
+            stop_words = [stemmer.stem(word) for word in stop_words]
+
+            # add a summary column
+            df['summary'] = None
+
+            # add column for average cluster vector
+            df['avg_vector'] = None
+
+            # infer cluster topics
+            for label in sorted(df['label'].unique()):
+                # get all samples with this label
+                samples = df[df['label'] == label]['sentence']
+                
+                # get all vectors with this label
+                vectors = np.stack(
+                    df[df['label'] == label]['vector'].to_numpy())
+                
+                # compute average vec for this cluster label
+                avg_vector = np.mean(vectors, axis=0)
+                
+                # add average vector to dataframe
+                df.loc[df['label'] == label, 'avg_vector'] = \
+                    df.loc[df['label'] == label, 'avg_vector'].map(
+                        lambda x: avg_vector)
+                
+                # convert samples to a list
+                samples = samples.tolist()
+                
+                # tokenize samples by whitespace
+                tokens = [[word for word in sentence.split(' ')] 
+                    for sentence in samples]
+                
+                # flatten samples list
+                tokens = [inner for outer in tokens for inner in outer]
+                
+                # stem tokens
+                tokens = [stemmer.stem(token) for token in tokens]
+                
+                # filter stopwords
+                tokens = [token for token in tokens if not token in stop_words]
+                
+                # get token frequencies
+                fdist = nltk.FreqDist(tokens)
+                
+                # get summary string from 5 most frequent tokens
+                summary = ' '.join(
+                    [token for token, _ in fdist.most_common(5)])
+                
+                # add summary string to dataframe
+                df.loc[df['label'] == label, 'summary'] = summary
+
+            # get list of cluster labels
+            cluster_summaries = df['summary'].drop_duplicates().tolist()
+
+            # create numpy array of average cluster vectors
+            cluster_vecs = np.stack(
+                df['avg_vector'].drop_duplicates().tolist(), axis=0)
+
+            # compute closest avg cluster vector to this query vector
+            dists = np.linalg.norm(
+                cluster_vecs - value_enc.detach().numpy(), ord=1, axis=1)
+
+            value_cluster = cluster_summaries[np.argmin(dists)]
+
+            return value_cluster
+    
+
+    app.run_server(debug=False)
 
 
 if __name__ == '__main__':
