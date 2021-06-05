@@ -10,7 +10,7 @@ from torch.optim import Adam
 from torch.nn.functional import triplet_margin_with_distance_loss
 from torch.nn import PairwiseDistance
 
-from models.cosine_distance import CosineDistance
+from model.cosine_distance import CosineDistance
 
 
 class TripletTrainer():

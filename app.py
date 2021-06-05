@@ -21,10 +21,10 @@ from dash.dependencies import Input, Output, State
 
 from dashboard.components import header, input_form, projected_manifold_plot, summary_section
 
-from datasets.qa_triplet_dataset import QATripletDataset
-from models.max_over_time_cnn import MaxOverTimeCNN
+from dataset.qa_triplet_dataset import QATripletDataset
+from model.max_over_time_cnn import MaxOverTimeCNN
 
-from scrapers.utils.text_utils import process_text
+from scraper.utils.text_utils import process_text
 
 
 def main():

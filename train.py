@@ -5,9 +5,9 @@ Main model training script.
 
 import yaml 
 
-from datasets.qa_triplet_dataset import QATripletDataset
-from models.max_over_time_cnn import MaxOverTimeCNN
-from trainers.triplet_trainer import TripletTrainer
+from dataset.qa_triplet_dataset import QATripletDataset
+from model.max_over_time_cnn import MaxOverTimeCNN
+from trainer.triplet_trainer import TripletTrainer
 
 
 def main():

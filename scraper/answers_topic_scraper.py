@@ -8,7 +8,7 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 
-from scrapers.utils.text_utils import test_qa_is_good, process_text
+from scraper.utils.text_utils import test_qa_is_good, process_text
 
 
 class AnswersTopicScraper():

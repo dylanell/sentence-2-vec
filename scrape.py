@@ -5,7 +5,7 @@ Construct a dataset of question-answer pairs on a singular topic from answers.co
 
 import yaml
 
-from scrapers.answers_topic_scraper import AnswersTopicScraper
+from scraper.answers_topic_scraper import AnswersTopicScraper
 
 
 def main():

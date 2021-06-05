@@ -11,8 +11,8 @@ data:
 train:
 	${PYTHON} train.py
 
-app:
+local:
 	${PYTHON} app.py
 
-#test:
-#	${PYTHON} -m pytest -v
+docker:
+	docker-compose up
