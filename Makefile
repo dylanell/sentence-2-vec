@@ -3,7 +3,7 @@ PYTHON = python3
 .PHONY:
 
 setup:
-	pip install -r requirements.txt
+	bash scripts/env_setup.sh
 
 data:
 	${PYTHON} scrape.py
@@ -13,6 +13,3 @@ train:
 
 local:
 	${PYTHON} app.py
-
-docker:
-	docker-compose up

@@ -91,6 +91,14 @@ def main():
     fig.update_traces(marker_size=5)
     fig.layout.coloraxis.showscale = False
     fig.update_layout(showlegend=False)
+    # fig.update_layout(annotations=[
+    #     {
+    #         'x': df.iloc[-1]['pc_1'],
+    #         'y': df.iloc[-1]['pc_2'],
+    #         #'z': df.iloc[-1]['pc_3'],
+    #         'text': "Test Point"
+    #     }
+    # ])
 
     # nearest neighbors model
     neigh = NearestNeighbors(n_neighbors=6, metric='cosine')

@@ -1,3 +1,6 @@
+# virtual environments
+virtualenv/
+
 # VSCode
 .vscode/
 
