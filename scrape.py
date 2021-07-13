@@ -14,7 +14,7 @@ def main():
     
     scraper = AnswersTopicScraper(config['write_path'])
 
-    scraper.scrape(config['topic'], 30000)
+    scraper.scrape(config['topic'], config['max_samples'])
 
     scraper.close()
 
