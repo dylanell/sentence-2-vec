@@ -60,14 +60,14 @@ class AnswersTopicScraper():
 
         print('[INFO]: scraping pages for \'{}\''.format(topic_url))
         while num_samples < min_samples:
+            print(f"[INFO]: scraping \'{soup.title.text}\', page: {page_num}")
+            
             # pull page content and parse
             headers = {'User-Agent': 'Mozilla/5.0'}
             page = requests.get(
                 f'{topic_url}/best?page={page_num}', headers=headers)
             assert page.status_code == 200, 'page download unsuccessful'
             soup = BeautifulSoup(page.content, 'html.parser')
-
-            print(f"[INFO]: scraping \'{soup.title.text}\', page: {page_num}")
 
             # extract all question divs from this page
             question_divs = soup.find_all(
