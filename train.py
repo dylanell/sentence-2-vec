@@ -1,46 +1,39 @@
 """
-Script to train sentence2vec model.
+Main model training script.
 """
 
-import yaml
-import torch
 
-from util.pytorch_utils import build_processed_qa_dataloaders
-from model.sentence_2_vec_triplet import Sentence2VecTriplet
+import yaml 
+
+from dataset.qa_triplet_dataset import QATripletDataset
+from model.max_over_time_cnn import MaxOverTimeCNN
+from trainer.triplet_trainer import TripletTrainer
 
 
 def main():
-    # parse configuration file
-    with open('config.yaml', 'r') as fp:
+    with open('config/train_cfg.yml', 'r') as fp:
         config = yaml.load(fp, Loader=yaml.FullLoader)
+    
+    dataset = QATripletDataset(
+        config['database_file'], config['database_table'], 
+        config['vocab_file'])
 
-    # path to processed qa data file
-    data_file = '{}qa_pairs_processed.csv'.format(config['dataset_directory'])
+    dataloader = dataset.build_dataloader(
+        batch_size=config['batch_size'], shuffle=True)
 
-    # build data iterators and vocabulary object
-    data_iter, vocab = build_processed_qa_dataloaders(
-        data_file, batch_size=config['batch_size'])
+    encoder = MaxOverTimeCNN(
+        len(dataset.get_vocab()), config['wordvec_dim'], config['sentvec_dim'], 
+        acceleration=True)
 
-    # save vocab
-    vocab_file = '{}{}_vocab.txt'.format(
-        config['output_directory'], config['model_name'])
-    with open(vocab_file, 'w') as fp:
-        for word, index in dict(vocab.stoi).items():
-            fp.write('{} {}\n'.format(word, index))
+    print(f'[INFO]: encoder architecture:\n{encoder}')
 
-    # add vocab info to config
-    config['vocab_len'] = len(vocab)
+    trainer = TripletTrainer(encoder, dataloader)
 
-    # initialize model
-    model = Sentence2VecTriplet(config)
+    trainer.train(config['num_epochs'])
 
-    # train model if we have trainable parameters
-    if len(list(model.parameters())) > 0:
-        model.train_epochs(data_iter)
+    encoder.save('artifacts/models')
 
-    # save final model checkpoint
-    torch.save(model.state_dict(), '{}{}_model.pt'.format(
-        config['output_directory'], config['model_name']))
+    dataset.close()
 
 
 if __name__ == '__main__':

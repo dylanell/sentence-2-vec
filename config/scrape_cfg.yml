@@ -1,0 +1,3 @@
+write_path: /home/dylan/datasets/answers
+topic: diabetes
+max_samples: 30000
